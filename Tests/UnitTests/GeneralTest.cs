@@ -27,8 +27,34 @@ public class GeneralTest
         });
         createNew.TemplateCsvFile = "template.csv";
         createNew.SoundCategories.Add(soundCategoryVm);
-        createNew.Save("createNew.ksproj");
 
+        var diff = createNew.Difficulties.First(k => k.Name == "4K Hard");
+        diff.GroupTimingRules.Add(new GroupTimingRule()
+        {
+            PreferredCategory = "Asdf",
+            TimingRanges = new List<RangeValue<int>>()
+            {
+                new(1234, 5678),
+                new(6000, 8000)
+            }
+        });
+
+        diff.GroupTimingRules.Add(new GroupTimingRule()
+        {
+            PreferredCategory = "Kicks",
+            TimingRanges = new List<RangeValue<int>>()
+            {
+                new(12345, 23456),
+                new(25000, 30000)
+            }
+        });
+
+        createNew.Difficulties.Add(new ProjectDifficulty()
+        {
+            Name = "NONEXISTDIFF"
+        });
+
+        createNew.Save("createNew.ksproj");
         var load = await Project.LoadAsync("createNew.ksproj");
         load.Save("load.ksproj");
     }

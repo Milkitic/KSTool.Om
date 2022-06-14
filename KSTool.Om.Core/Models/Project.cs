@@ -171,5 +171,22 @@ public class Project : ViewModelBase
                 }
             }
         }
+        
+        foreach (var projectDifficulty in project.Difficulties)
+        {
+            foreach (var groupTimingRule in projectDifficulty.GroupTimingRules)
+            {
+                var categoryInstance =
+                    project.SoundCategories.FirstOrDefault(k => k.Name == groupTimingRule.PreferredCategory);
+                if (categoryInstance == null)
+                {
+                    groupTimingRule.IsCategoryLost = true;
+                }
+                else
+                {
+                    groupTimingRule.Category = categoryInstance;
+                }
+            }
+        }
     }
 }

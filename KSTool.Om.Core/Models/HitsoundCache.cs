@@ -10,11 +10,12 @@ public class HitsoundCache
         CachedSound = cachedSound;
         SoundFile = new SoundFile
         {
-            FilePath = path,
+            FilePath = path
         };
     }
 
     public CachedSound? CachedSound { get; }
+
     public SoundFile SoundFile { get; }
 
     public static async Task<HitsoundCache> CreateAsync(WaveFormat waveFormat, string path)

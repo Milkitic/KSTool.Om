@@ -1,11 +1,19 @@
-﻿namespace KSTool.Om.Core.Models;
+﻿using YamlDotNet.Serialization;
+
+namespace KSTool.Om.Core.Models;
 
 public class GroupTimingRule
 {
     #region Configurable
 
-    public string PreferredGroupName { get; set; } = "New Group";
+    public string PreferredCategory { get; set; } = "New Category";
     public List<RangeValue<int>> TimingRanges { get; set; } = new();
 
     #endregion
+
+    [YamlIgnore]
+    public bool IsCategoryLost { get; set; }
+
+    [YamlIgnore]
+    public SoundCategory? Category { get; set; }
 }

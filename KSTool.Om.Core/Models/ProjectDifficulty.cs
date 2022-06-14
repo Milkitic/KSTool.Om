@@ -14,7 +14,7 @@ public class ProjectDifficulty
     #endregion
 
     [YamlIgnore]
-    public bool IsLost => OsuFile == null;
+    public bool IsDifficultyLost => OsuFile == null;
 
     [YamlIgnore]
     public int Duration { get; set; }
