@@ -20,5 +20,5 @@ public class ProjectDifficulty
     public int Duration { get; set; }
 
     [YamlIgnore]
-    public OsuFile? OsuFile { get; set; }
+    public LocalOsuFile? OsuFile { get; set; }
 }

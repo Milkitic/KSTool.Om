@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using Coosu.Beatmap;
+using Coosu.Beatmap.Sections.HitObject;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Milki.Extensions.MixPlayer.NAudioExtensions;
@@ -10,11 +11,13 @@ namespace KSTool.Om.Core.Models;
 
 public class Project : ViewModelBase
 {
+    private const string CurrentProjectVersion = "2.0";
+
     #region Configurable
 
-    public string KsProjectVersion { get; set; } = "2.0";
+    public string? KsProjectVersion { get; set; }
 
-    public string TemplateCsvFile { get; set; } = "";
+    public string? TemplateCsvFile { get; set; }
 
     public string ProjectName { get; set; } = "New Project";
 
@@ -39,6 +42,9 @@ public class Project : ViewModelBase
 
     [YamlIgnore]
     public AudioPlaybackEngine? Engine { get; set; }
+
+    [YamlIgnore]
+    public ProjectDifficulty? CurrentDifficulty { get; set; }
 
     public void Save(string path)
     {
@@ -90,13 +96,36 @@ public class Project : ViewModelBase
         soundCategory.SoundFileVms.Add(soundFile);
     }
 
+    public async Task ExportCurrentDifficultyAsync()
+    {
+        if (CurrentDifficulty == null) throw new Exception("You haven't selected any difficulties!");
+        if (string.IsNullOrWhiteSpace(TemplateCsvFile)) throw new Exception("You haven't selected any template files!");
+        var osuFile = CurrentDifficulty.OsuFile;
+        if (osuFile == null) throw new Exception("Osu file is lost");
+
+        await Task.Run(() =>
+        {
+            // Clear current sounds
+            foreach (var rawHitObject in osuFile.HitObjects.HitObjectList)
+            {
+                rawHitObject.SampleSet = ObjectSamplesetType.Auto;
+                rawHitObject.AdditionSet = ObjectSamplesetType.Auto;
+                rawHitObject.Hitsound = HitsoundType.Normal;
+                rawHitObject.FileName = null;
+            }
+
+            osuFile.Metadata.Version += " (KS)";
+            osuFile.WriteOsuFile(Path.Combine(OsuBeatmapDir, osuFile.GetPath(osuFile.Metadata.Version)));
+        });
+    }
+
     public static async Task<Project> LoadAsync(string projectPath)
     {
         var content = File.ReadAllText(projectPath);
         var projectVm = YamlConverter.DeserializeSettings<Project>(content);
         if (string.IsNullOrEmpty(projectVm.KsProjectVersion))
             throw new Exception("Invalid project file.");
-        if (projectVm.KsProjectVersion != "2.0")
+        if (projectVm.KsProjectVersion != CurrentProjectVersion)
             throw new Exception("Unsupported project file version: " + projectVm.KsProjectVersion);
 
         await InitializeProjectAsync(projectVm);
@@ -116,7 +145,9 @@ public class Project : ViewModelBase
 
     private static async Task InitializeProjectAsync(Project project)
     {
-        if (!string.IsNullOrEmpty(project.TemplateCsvFile))
+        project.KsProjectVersion = CurrentProjectVersion;
+
+        if (!string.IsNullOrWhiteSpace(project.TemplateCsvFile))
         {
             project.LoadTemplateFile(project.TemplateCsvFile);
         }
@@ -130,6 +161,10 @@ public class Project : ViewModelBase
             {
                 var osuFile = await OsuFile.ReadFromFileAsync(fileInfo.FullName);
                 var version = osuFile.Metadata.Version;
+
+                if (version?.EndsWith(" (KS)") == true)
+                    continue;
+
                 var exist = project.Difficulties.FirstOrDefault(k => k.Name == version);
 
                 if (exist == null)
@@ -171,7 +206,7 @@ public class Project : ViewModelBase
                 }
             }
         }
-        
+
         foreach (var projectDifficulty in project.Difficulties)
         {
             foreach (var groupTimingRule in projectDifficulty.GroupTimingRules)
