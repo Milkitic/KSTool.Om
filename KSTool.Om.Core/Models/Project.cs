@@ -154,9 +154,12 @@ public class Project : ViewModelBase
 
         project.Engine = new AudioPlaybackEngine();
 
-        var soundFiles = IOUtils.EnumerateFiles(project.OsuBeatmapDir, ".wav", ".ogg", ".osu");
-        foreach (var fileInfo in soundFiles)
+        var files = IOUtils.EnumerateFiles(project.OsuBeatmapDir, ".wav", ".ogg", ".osu");
+        var ghostReferences = new Dictionary<string, LocalOsuFile>();
+
+        foreach (var fileInfo in files)
         {
+            // Difficulties
             if (fileInfo.Extension.Equals(".osu", StringComparison.OrdinalIgnoreCase))
             {
                 var osuFile = await OsuFile.ReadFromFileAsync(fileInfo.FullName);
@@ -164,28 +167,45 @@ public class Project : ViewModelBase
 
                 if (version?.EndsWith(" (KS)") == true)
                     continue;
-
-                var exist = project.Difficulties.FirstOrDefault(k => k.Name == version);
-
-                if (exist == null)
+                if (version?.EndsWith(" (GHOST)") == true)
                 {
-                    exist = new ProjectDifficulty
-                    {
-                        Name = version
-                    };
-                    project.Difficulties.Add(exist);
+                    ghostReferences.Add(fileInfo.FullName, osuFile);
+                    continue;
                 }
 
-                exist.OsuFile = osuFile;
-                exist.Duration = (int)osuFile.HitObjects.MaxTime;
+                var existDifficulty = project.Difficulties.FirstOrDefault(k => k.DifficultyName == version);
+
+                if (existDifficulty == null)
+                {
+                    existDifficulty = new ProjectDifficulty
+                    {
+                        DifficultyName = version
+                    };
+                    project.Difficulties.Add(existDifficulty);
+                }
+
+                existDifficulty.OsuFile = osuFile;
+                existDifficulty.Duration = (int)osuFile.HitObjects.MaxTime;
             }
-            else
+            else // Hitsound cache
             {
                 var hitsoundCache = await HitsoundCache.CreateAsync(project.Engine.WaveFormat,
                     fileInfo.FullName);
                 project.HitsoundFiles.Add(hitsoundCache.SoundFile.GetRelativePath(project.OsuBeatmapDir),
                     hitsoundCache);
             }
+        }
+
+        // Ghost references
+        foreach (var ghostReference in ghostReferences)
+        {
+            var ghostVersion = ghostReference.Value.Metadata.Version!;
+            var version = ghostVersion.Substring(0, ghostVersion.Length - 8);
+
+            var existDifficulty = project.Difficulties.FirstOrDefault(k => k.DifficultyName == version);
+            if (existDifficulty == null) continue;
+
+            existDifficulty.GhostReferenceOsuFile = ghostReference.Value;
         }
 
         foreach (var soundCategoryVm in project.SoundCategories)

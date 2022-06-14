@@ -28,7 +28,7 @@ public class GeneralTest
         createNew.TemplateCsvFile = "template.csv";
         createNew.SoundCategories.Add(soundCategoryVm);
 
-        var diff = createNew.Difficulties.First(k => k.Name == "4K Hard");
+        var diff = createNew.Difficulties.First(k => k.DifficultyName == "4K Hard");
         diff.GroupTimingRules.Add(new GroupTimingRule()
         {
             PreferredCategory = "Asdf",
@@ -51,7 +51,7 @@ public class GeneralTest
 
         createNew.Difficulties.Add(new ProjectDifficulty()
         {
-            Name = "NONEXISTDIFF"
+            DifficultyName = "NONEXISTDIFF"
         });
 
         createNew.Save("createNew.ksproj");

@@ -8,7 +8,7 @@ public class ProjectDifficulty
 {
     #region Configurable
 
-    public string Name { get; set; } = "Unknown";
+    public string DifficultyName { get; set; } = "Unknown";
     public ObservableCollection<GroupTimingRule> GroupTimingRules { get; set; } = new();
 
     #endregion
@@ -21,4 +21,7 @@ public class ProjectDifficulty
 
     [YamlIgnore]
     public LocalOsuFile? OsuFile { get; set; }
+
+    [YamlIgnore]
+    public LocalOsuFile? GhostReferenceOsuFile { get; set; }
 }
