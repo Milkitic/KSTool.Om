@@ -1,4 +1,5 @@
-﻿using YamlDotNet.Serialization;
+﻿using System.Collections.ObjectModel;
+using YamlDotNet.Serialization;
 
 namespace KSTool.Om.Core.Models;
 
@@ -7,7 +8,7 @@ public class GroupTimingRule
     #region Configurable
 
     public string PreferredCategory { get; set; } = "New Category";
-    public List<RangeValue<int>> TimingRanges { get; set; } = new();
+    public ObservableCollection<RangeValue<int>> TimingRanges { get; set; } = new();
 
     #endregion
 

@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+using KSTool.Om.Core;
 using KSTool.Om.Core.Models;
 
 namespace UnitTests;
@@ -21,8 +23,8 @@ public class GeneralTest
             createNew.HitsoundFiles.First(k => k.Key == "soft-hitwhistle9.wav").Value.SoundFile,
             soundCategoryVm);
 
-        soundCategoryVm.SoundFiles.Add("NOTEXIST.wav");
-        soundCategoryVm.SoundFileVms.Add(new SoundFile()
+        soundCategoryVm.SoundFileNames.Add("NOTEXIST.wav");
+        soundCategoryVm.SoundFiles.Add(new SoundFile()
         {
             FilePath = "NOTEXIST.wav",
             IsFileLost = true
@@ -34,7 +36,7 @@ public class GeneralTest
         diff.GroupTimingRules.Add(new GroupTimingRule()
         {
             PreferredCategory = "Asdf",
-            TimingRanges = new List<RangeValue<int>>()
+            TimingRanges = new ObservableCollection<RangeValue<int>>()
             {
                 new(1234, 5678),
                 new(6000, 8000)
@@ -44,7 +46,7 @@ public class GeneralTest
         diff.GroupTimingRules.Add(new GroupTimingRule()
         {
             PreferredCategory = "Kicks",
-            TimingRanges = new List<RangeValue<int>>()
+            TimingRanges = new ObservableCollection<RangeValue<int>>()
             {
                 new(12345, 23456),
                 new(25000, 30000)
@@ -61,5 +63,13 @@ public class GeneralTest
         load.Save("Files/load.ksproj");
         load.CurrentDifficulty = load.Difficulties.FirstOrDefault(k => k.DifficultyName.Contains("4K Hard"));
         await load.ExportCurrentDifficultyAsync();
+    }
+
+    [Fact]
+    public async Task TestConvertHelper()
+    {
+        await OsuToTemplateHelper.Convert(
+            @"C:\Users\milkitic\Desktop\1002455 supercell - Giniro Hikousen  (Ttm bootleg Edit)",
+            "4K Hard", "Files/template.csv");
     }
 }

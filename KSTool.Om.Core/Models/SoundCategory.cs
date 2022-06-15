@@ -25,10 +25,10 @@ public class SoundCategory : ViewModelBase
     /// <summary>
     /// Relative paths
     /// </summary>
-    public HashSet<string> SoundFiles { get; set; } = new();
+    public HashSet<string> SoundFileNames { get; set; } = new();
 
     #endregion
 
     [YamlIgnore]
-    public ObservableCollection<SoundFile> SoundFileVms { get; set; } = new();
+    public ObservableCollection<SoundFile> SoundFiles { get; set; } = new();
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using Coosu.Beatmap;
+using Coosu.Beatmap.Sections.Event;
 using Coosu.Beatmap.Sections.HitObject;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -50,16 +51,16 @@ public class Project : ViewModelBase
     {
         foreach (var soundCategoryVm in SoundCategories)
         {
-            soundCategoryVm.SoundFiles.Clear();
-            foreach (var soundFileVm in soundCategoryVm.SoundFileVms)
+            soundCategoryVm.SoundFileNames.Clear();
+            foreach (var soundFileVm in soundCategoryVm.SoundFiles)
             {
                 if (soundFileVm.IsFileLost)
                 {
-                    soundCategoryVm.SoundFiles.Add(soundFileVm.FilePath);
+                    soundCategoryVm.SoundFileNames.Add(soundFileVm.FilePath);
                 }
                 else
                 {
-                    soundCategoryVm.SoundFiles.Add(soundFileVm.GetRelativePath(OsuBeatmapDir));
+                    soundCategoryVm.SoundFileNames.Add(soundFileVm.GetRelativePath(OsuBeatmapDir));
                 }
             }
         }
@@ -92,8 +93,8 @@ public class Project : ViewModelBase
 
     public void AddSoundFileIntoSoundCategory(SoundFile soundFile, SoundCategory soundCategory)
     {
-        soundCategory.SoundFiles.Add(soundFile.GetRelativePath(OsuBeatmapDir));
-        soundCategory.SoundFileVms.Add(soundFile);
+        soundCategory.SoundFileNames.Add(soundFile.GetRelativePath(OsuBeatmapDir));
+        soundCategory.SoundFiles.Add(soundFile);
     }
 
     public async Task ExportCurrentDifficultyAsync()
@@ -106,6 +107,7 @@ public class Project : ViewModelBase
         await Task.Run(() =>
         {
             // Clear current sounds
+            osuFile.Events.Samples.Clear();
             foreach (var rawHitObject in osuFile.HitObjects.HitObjectList)
             {
                 rawHitObject.SampleSet = ObjectSamplesetType.Auto;
@@ -115,12 +117,100 @@ public class Project : ViewModelBase
                 rawHitObject.FileName = null;
             }
 
-            osuFile.Events.Samples.Clear();
+            var flattenRules = new List<TimingRule>();
+            foreach (var timingGroup in CurrentDifficulty.GroupTimingRules.Where(k => !k.IsCategoryLost))
+            {
+                flattenRules.AddRange(timingGroup.TimingRanges.Select(range => new TimingRule(timingGroup.Category!, range)));
+            }
+
+            var allObjects = osuFile.HitObjects.HitObjectList
+                .GroupBy(k => k.Offset)
+                .ToDictionary(k => k.Key, k => k.ToArray());
+            var ghostObjects =
+                CurrentDifficulty.GhostReferenceOsuFile?.HitObjects.HitObjectList
+                    .GroupBy(k => k.Offset)
+                    .ToDictionary(k => k.Key, k => k.ToArray())
+                ?? new Dictionary<int, RawHitObject[]>();
+
+            foreach (var (timing, templateFiles) in Templates)
+            {
+                var hitsoundFiles = templateFiles
+                    .Select(k =>
+                    {
+                        var success = HitsoundFiles.TryGetValue(k, out var cache);
+                        return (success, cache);
+                    })
+                    .Where(k => k.success && !k.cache!.SoundFile.IsFileLost)
+                    .Select(k => k.cache!)
+                    .ToArray();
+                var unhandledHitsoundFileList = new List<HitsoundCache>(hitsoundFiles);
+
+                if (!allObjects.TryGetValue(timing, out var existObjects))
+                {
+                    existObjects = Array.Empty<RawHitObject>();
+                }
+
+                if (!ghostObjects.TryGetValue(timing, out var ghosts))
+                {
+                    ghosts = Array.Empty<RawHitObject>();
+                }
+
+                if (ghosts.Length > 0)
+                {
+                    existObjects = existObjects.Where(k => !ghosts.Contains(k, HitObjectComparer.Instance)).ToArray();
+                }
+
+                var unhandledObjectList = new List<RawHitObject>(existObjects);
+
+                var currentCategories = GetCurrentCategories(flattenRules, timing);
+                foreach (var hitsoundFile in hitsoundFiles)
+                {
+                    var category = currentCategories.FirstOrDefault(k =>
+                        k.SoundFileNames.Contains(hitsoundFile.SoundFile.GetRelativePath(OsuBeatmapDir)));
+                    if (category != null)
+                    {
+                        ExecuteCopy(category.Volume, hitsoundFile, unhandledObjectList, unhandledHitsoundFileList,
+                            osuFile.Events.Samples);
+                    }
+                }
+
+                foreach (var category in currentCategories)
+                {
+
+                }
+
+                if (currentCategories.Count > 0)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
 
             osuFile.Metadata.Version += " (KS)";
             osuFile.WriteOsuFile(Path.Combine(OsuBeatmapDir, osuFile.GetPath(osuFile.Metadata.Version)));
         });
+
+
+        static HashSet<SoundCategory> GetCurrentCategories(List<TimingRule> flattenRules, int timing)
+        {
+            var categories = flattenRules
+                .Where(k => k.TimingRange.Start <= timing && k.TimingRange.End >= timing)
+                .Select(k => k.Category)
+                .ToHashSet();
+            return categories;
+        }
+
+        static void ExecuteCopy(int volume, HitsoundCache hitsoundFile, List<RawHitObject> unhandledObjectList,
+            List<HitsoundCache> unhandledHitsoundFileList, List<StoryboardSampleData> samples)
+        {
+            throw new NotImplementedException();
+        }
     }
+
+
 
     public static async Task<Project> LoadAsync(string projectPath)
     {
@@ -213,15 +303,15 @@ public class Project : ViewModelBase
 
         foreach (var soundCategoryVm in project.SoundCategories)
         {
-            foreach (var soundFileRelative in soundCategoryVm.SoundFiles)
+            foreach (var soundFileRelative in soundCategoryVm.SoundFileNames)
             {
                 if (project.HitsoundFiles.TryGetValue(soundFileRelative, out var cache))
                 {
-                    soundCategoryVm.SoundFileVms.Add(cache.SoundFile);
+                    soundCategoryVm.SoundFiles.Add(cache.SoundFile);
                 }
                 else
                 {
-                    soundCategoryVm.SoundFileVms.Add(new SoundFile
+                    soundCategoryVm.SoundFiles.Add(new SoundFile
                     {
                         FilePath = soundFileRelative,
                         IsFileLost = true
