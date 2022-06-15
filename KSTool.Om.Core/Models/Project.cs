@@ -134,6 +134,7 @@ public class Project : ViewModelBase
 
             foreach (var (timing, templateFiles) in Templates)
             {
+                // Get available sounds
                 var hitsoundCaches = templateFiles
                     .Select(k =>
                     {
@@ -150,24 +151,14 @@ public class Project : ViewModelBase
                     .ToArray();
                 var unhandledHitsoundCacheList = new List<HitsoundCache>(hitsoundCaches);
 
-                if (!allObjects.TryGetValue(timing, out var existObjects))
-                {
-                    existObjects = Array.Empty<RawHitObject>();
-                }
-
-                if (!ghostObjects.TryGetValue(timing, out var ghosts))
-                {
-                    ghosts = Array.Empty<RawHitObject>();
-                }
-
-                if (ghosts.Length > 0)
-                {
-                    existObjects = existObjects.Where(k => !ghosts.Contains(k, HitObjectComparer.Instance)).ToArray();
-                }
-
+                // Get true object list to copy
+                var existObjects = GetCurrentTimingObjects(allObjects, timing, ghostObjects);
                 var unhandledObjectList = new List<RawHitObject>(existObjects);
 
+                // Get available categories 
                 var currentCategories = GetCurrentTimingRules(flattenRules, timing);
+             
+                // Copy by current timing rule if exist (suggestion)
                 foreach (var hitsoundCache in hitsoundCaches)
                 {
                     var relativePath = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
@@ -179,6 +170,7 @@ public class Project : ViewModelBase
                     }
                 }
 
+                // Copy the the other things
                 foreach (var hitsoundCache in unhandledHitsoundCacheList.ToArray())
                 {
                     var relativePath = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
@@ -200,38 +192,30 @@ public class Project : ViewModelBase
         });
 
 
-        static HashSet<TimingRule> GetCurrentTimingRules(List<TimingRule> flattenRules, int timing)
-        {
-            var categories = flattenRules
-                .Where(k => k.TimingRange.Start <= timing && k.TimingRange.End >= timing)
-                .ToHashSet();
-            return categories;
-        }
-
         void ExecuteCopy(int volume, int timing, HitsoundCache hitsoundCache, List<RawHitObject> unhandledObjectList,
             List<HitsoundCache> unhandledHitsoundFileList, List<StoryboardSampleData> samples, bool isCategoryScope)
         {
             if (isCategoryScope)
             {
+                // 优先复制在类别列表中的建议规则，如果不在则延后复制
                 if (unhandledObjectList.Count == 0) return;
                 GeneralCopy(volume, hitsoundCache, unhandledObjectList, unhandledHitsoundFileList);
+                return;
+            }
+
+            if (unhandledObjectList.Count == 0) // 没有物件用来复制了，但是存在待复制的列表，复制进SB音效中
+            {
+                samples.Add(new StoryboardSampleData
+                {
+                    Filename = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
+                    Volume = (byte)volume,
+                    Offset = timing
+                });
+                unhandledHitsoundFileList.Remove(hitsoundCache);
             }
             else
             {
-                if (unhandledObjectList.Count == 0)
-                {
-                    samples.Add(new StoryboardSampleData
-                    {
-                        Filename = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
-                        Volume = (byte)volume,
-                        Offset = timing
-                    });
-                    unhandledHitsoundFileList.Remove(hitsoundCache);
-                }
-                else
-                {
-                    GeneralCopy(volume, hitsoundCache, unhandledObjectList, unhandledHitsoundFileList);
-                }
+                GeneralCopy(volume, hitsoundCache, unhandledObjectList, unhandledHitsoundFileList);
             }
         }
 
@@ -247,7 +231,33 @@ public class Project : ViewModelBase
         }
     }
 
+    private static HashSet<TimingRule> GetCurrentTimingRules(List<TimingRule> flattenRules, int timing)
+    {
+        var categories = flattenRules
+            .Where(k => k.TimingRange.Start <= timing && k.TimingRange.End >= timing)
+            .ToHashSet();
+        return categories;
+    }
 
+    private static RawHitObject[] GetCurrentTimingObjects(Dictionary<int, RawHitObject[]> allObjects, int timing, Dictionary<int, RawHitObject[]> ghostObjects)
+    {
+        if (!allObjects.TryGetValue(timing, out var existObjects))
+        {
+            existObjects = Array.Empty<RawHitObject>();
+        }
+
+        if (!ghostObjects.TryGetValue(timing, out var ghosts))
+        {
+            ghosts = Array.Empty<RawHitObject>();
+        }
+
+        if (ghosts.Length > 0)
+        {
+            existObjects = existObjects.Where(k => !ghosts.Contains(k, HitObjectComparer.Instance)).ToArray();
+        }
+
+        return existObjects;
+    }
 
     public static async Task<Project> LoadAsync(string projectPath)
     {
