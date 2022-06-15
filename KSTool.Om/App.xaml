@@ -1,9 +1,20 @@
-﻿<Application x:Class="KSTool.Om.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:KSTool.Om"
-             StartupUri="MainWindow.xaml">
+﻿<Application
+    x:Class="KSTool.Om.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:KSTool.Om.Converters"
+    xmlns:local="clr-namespace:KSTool.Om"
+    ShutdownMode="OnExplicitShutdown"
+    Startup="App_OnStartup">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:IsNullToIsEnabledConverter x:Key="IsNullToIsEnabledConverter" />
+            <converters:TitleConverter x:Key="TitleConverter" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

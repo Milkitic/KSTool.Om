@@ -10,7 +10,7 @@ using YamlDotNet.Serialization;
 
 namespace KSTool.Om.Core.Models;
 
-public class Project : ViewModelBase
+public class Project : ViewModelBase, IDisposable
 {
     private const string CurrentProjectVersion = "2.0";
 
@@ -46,6 +46,9 @@ public class Project : ViewModelBase
 
     [YamlIgnore]
     public ProjectDifficulty? CurrentDifficulty { get; set; }
+
+    [YamlIgnore]
+    public bool IsModified { get; set; }
 
     public void Save(string path)
     {
@@ -198,6 +201,7 @@ public class Project : ViewModelBase
         if (projectVm.KsProjectVersion != CurrentProjectVersion)
             throw new Exception("Unsupported project file version: " + projectVm.KsProjectVersion);
 
+        projectVm.ProjectPath = projectPath;
         await InitializeProjectAsync(projectVm);
         return projectVm;
     }
@@ -381,5 +385,10 @@ public class Project : ViewModelBase
         rawHitObject.FileName = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
         rawHitObject.SampleVolume = (byte)volume;
         unhandledHitsoundFileList.Remove(hitsoundCache);
+    }
+
+    public void Dispose()
+    {
+        Engine?.Dispose();
     }
 }

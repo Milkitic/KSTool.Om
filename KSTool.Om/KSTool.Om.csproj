@@ -5,7 +5,13 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HandyControl" Version="3.3.0" />
+    <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\KSTool.Om.Core\KSTool.Om.Core.csproj" />
