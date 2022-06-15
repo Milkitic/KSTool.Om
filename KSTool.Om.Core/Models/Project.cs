@@ -120,7 +120,8 @@ public class Project : ViewModelBase
             var flattenRules = new List<TimingRule>();
             foreach (var timingGroup in CurrentDifficulty.GroupTimingRules.Where(k => !k.IsCategoryLost))
             {
-                flattenRules.AddRange(timingGroup.RangeInfos.Select(range => new TimingRule(timingGroup.Category!, range)));
+                flattenRules.AddRange(
+                    timingGroup.RangeInfos.Select(range => new TimingRule(timingGroup.Category!, range)));
             }
 
             var allObjects = osuFile.HitObjects.HitObjectList
@@ -157,12 +158,13 @@ public class Project : ViewModelBase
 
                 // Get available categories 
                 var currentCategories = GetCurrentTimingRules(flattenRules, timing);
-             
+
                 // Copy by current timing rule if exist (suggestion)
                 foreach (var hitsoundCache in hitsoundCaches)
                 {
                     var relativePath = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
-                    var timingRule = currentCategories.FirstOrDefault(k => k.Category.SoundFileNames.Contains(relativePath));
+                    var timingRule =
+                        currentCategories.FirstOrDefault(k => k.Category.SoundFileNames.Contains(relativePath));
                     if (timingRule != null)
                     {
                         ExecuteCopy(timingRule.Volume, timing, hitsoundCache, unhandledObjectList,
@@ -190,73 +192,6 @@ public class Project : ViewModelBase
             osuFile.Metadata.Version += " (KS)";
             osuFile.WriteOsuFile(Path.Combine(OsuBeatmapDir, osuFile.GetPath(osuFile.Metadata.Version)));
         });
-
-
-        void ExecuteCopy(int volume, int timing, HitsoundCache hitsoundCache, List<RawHitObject> unhandledObjectList,
-            List<HitsoundCache> unhandledHitsoundFileList, List<StoryboardSampleData> samples, bool isCategoryScope)
-        {
-            if (isCategoryScope)
-            {
-                // 优先复制在类别列表中的建议规则，如果不在则延后复制
-                if (unhandledObjectList.Count == 0) return;
-                GeneralCopy(volume, hitsoundCache, unhandledObjectList, unhandledHitsoundFileList);
-                return;
-            }
-
-            if (unhandledObjectList.Count == 0) // 没有物件用来复制了，但是存在待复制的列表，复制进SB音效中
-            {
-                samples.Add(new StoryboardSampleData
-                {
-                    Filename = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
-                    Volume = (byte)volume,
-                    Offset = timing
-                });
-                unhandledHitsoundFileList.Remove(hitsoundCache);
-            }
-            else
-            {
-                GeneralCopy(volume, hitsoundCache, unhandledObjectList, unhandledHitsoundFileList);
-            }
-        }
-
-        void GeneralCopy(int volume, HitsoundCache hitsoundCache,
-            List<RawHitObject> unhandledObjectList, List<HitsoundCache> unhandledHitsoundFileList)
-        {
-            var rawHitObject = unhandledObjectList[0];
-            unhandledObjectList.RemoveAt(0);
-
-            rawHitObject.FileName = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
-            rawHitObject.SampleVolume = (byte)volume;
-            unhandledHitsoundFileList.Remove(hitsoundCache);
-        }
-    }
-
-    private static HashSet<TimingRule> GetCurrentTimingRules(List<TimingRule> flattenRules, int timing)
-    {
-        var categories = flattenRules
-            .Where(k => k.TimingRange.Start <= timing && k.TimingRange.End >= timing)
-            .ToHashSet();
-        return categories;
-    }
-
-    private static RawHitObject[] GetCurrentTimingObjects(Dictionary<int, RawHitObject[]> allObjects, int timing, Dictionary<int, RawHitObject[]> ghostObjects)
-    {
-        if (!allObjects.TryGetValue(timing, out var existObjects))
-        {
-            existObjects = Array.Empty<RawHitObject>();
-        }
-
-        if (!ghostObjects.TryGetValue(timing, out var ghosts))
-        {
-            ghosts = Array.Empty<RawHitObject>();
-        }
-
-        if (ghosts.Length > 0)
-        {
-            existObjects = existObjects.Where(k => !ghosts.Contains(k, HitObjectComparer.Instance)).ToArray();
-        }
-
-        return existObjects;
     }
 
     public static async Task<Project> LoadAsync(string projectPath)
@@ -383,5 +318,73 @@ public class Project : ViewModelBase
                 }
             }
         }
+    }
+
+    private HashSet<TimingRule> GetCurrentTimingRules(List<TimingRule> flattenRules, int timing)
+    {
+        var categories = flattenRules
+            .Where(k => k.TimingRange.Start <= timing && k.TimingRange.End >= timing)
+            .ToHashSet();
+        return categories;
+    }
+
+    private RawHitObject[] GetCurrentTimingObjects(Dictionary<int, RawHitObject[]> allObjects, int timing,
+        Dictionary<int, RawHitObject[]> ghostObjects)
+    {
+        if (!allObjects.TryGetValue(timing, out var existObjects))
+        {
+            existObjects = Array.Empty<RawHitObject>();
+        }
+
+        if (!ghostObjects.TryGetValue(timing, out var ghosts))
+        {
+            ghosts = Array.Empty<RawHitObject>();
+        }
+
+        if (ghosts.Length > 0)
+        {
+            existObjects = existObjects.Where(k => !ghosts.Contains(k, HitObjectComparer.Instance)).ToArray();
+        }
+
+        return existObjects;
+    }
+
+    private void ExecuteCopy(int volume, int timing, HitsoundCache hitsoundCache,
+        List<RawHitObject> unhandledObjectList, List<HitsoundCache> unhandledHitsoundFileList,
+        List<StoryboardSampleData> samples, bool isCategoryScope)
+    {
+        if (isCategoryScope)
+        {
+            // 优先复制在类别列表中的建议规则，如果不在则延后复制
+            if (unhandledObjectList.Count == 0) return;
+            GeneralCopy(volume, hitsoundCache, unhandledObjectList, unhandledHitsoundFileList);
+            return;
+        }
+
+        if (unhandledObjectList.Count == 0) // 没有物件用来复制了，但是存在待复制的列表，复制进SB音效中
+        {
+            samples.Add(new StoryboardSampleData
+            {
+                Filename = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
+                Volume = (byte)volume,
+                Offset = timing
+            });
+            unhandledHitsoundFileList.Remove(hitsoundCache);
+        }
+        else
+        {
+            GeneralCopy(volume, hitsoundCache, unhandledObjectList, unhandledHitsoundFileList);
+        }
+    }
+
+    private void GeneralCopy(int volume, HitsoundCache hitsoundCache, List<RawHitObject> unhandledObjectList,
+        List<HitsoundCache> unhandledHitsoundFileList)
+    {
+        var rawHitObject = unhandledObjectList[0];
+        unhandledObjectList.RemoveAt(0);
+
+        rawHitObject.FileName = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
+        rawHitObject.SampleVolume = (byte)volume;
+        unhandledHitsoundFileList.Remove(hitsoundCache);
     }
 }
