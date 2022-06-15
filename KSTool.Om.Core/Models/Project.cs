@@ -140,11 +140,6 @@ public class Project : ViewModelBase
                     .Select(k =>
                     {
                         var success = HitsoundFiles.TryGetValue(k, out var cache);
-                        if (success && cache!.SoundFile.IsFileLost)
-                        {
-                            return (isSuccess: false, cache);
-                        }
-
                         return (isSuccess: success, cache);
                     })
                     .Where(k => k.isSuccess && !k.cache!.SoundFile.IsFileLost)
@@ -229,7 +224,7 @@ public class Project : ViewModelBase
 
         project.Engine = new AudioPlaybackEngine();
 
-        var files = IOUtils.EnumerateFiles(project.OsuBeatmapDir, ".wav", ".ogg", ".osu");
+        var files = IOUtils.EnumerateFiles(project.OsuBeatmapDir, ".wav", ".mp3", ".ogg", ".osu");
         var ghostReferences = new Dictionary<string, LocalOsuFile>();
 
         foreach (var fileInfo in files)
@@ -366,7 +361,7 @@ public class Project : ViewModelBase
             samples.Add(new StoryboardSampleData
             {
                 Filename = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
-                Volume = (byte)volume,
+                Volume = (byte)(volume == 0 ? 100 : volume),
                 Offset = timing
             });
             unhandledHitsoundFileList.Remove(hitsoundCache);
