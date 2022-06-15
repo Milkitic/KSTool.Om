@@ -7,6 +7,8 @@ public class GeneralTest
     [Fact]
     public async Task TestProject()
     {
+        Directory.CreateDirectory("Files");
+
         var createNew = await Project.CreateNewAsync("Test",
             @"C:\Users\milkitic\Desktop\1002455 supercell - Giniro Hikousen  (Ttm bootleg Edit)");
 
@@ -25,7 +27,7 @@ public class GeneralTest
             FilePath = "NOTEXIST.wav",
             IsFileLost = true
         });
-        createNew.TemplateCsvFile = "template.csv";
+        createNew.TemplateCsvFile = "Files/template.csv";
         createNew.SoundCategories.Add(soundCategoryVm);
 
         var diff = createNew.Difficulties.First(k => k.DifficultyName == "4K Hard");
@@ -54,8 +56,10 @@ public class GeneralTest
             DifficultyName = "NONEXISTDIFF"
         });
 
-        createNew.Save("createNew.ksproj");
-        var load = await Project.LoadAsync("createNew.ksproj");
-        load.Save("load.ksproj");
+        createNew.Save("Files/createNew.ksproj");
+        var load = await Project.LoadAsync("Files/createNew.ksproj");
+        load.Save("Files/load.ksproj");
+        load.CurrentDifficulty = load.Difficulties.FirstOrDefault(k => k.DifficultyName.Contains("4K Hard"));
+        await load.ExportCurrentDifficultyAsync();
     }
 }

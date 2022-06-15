@@ -111,8 +111,11 @@ public class Project : ViewModelBase
                 rawHitObject.SampleSet = ObjectSamplesetType.Auto;
                 rawHitObject.AdditionSet = ObjectSamplesetType.Auto;
                 rawHitObject.Hitsound = HitsoundType.Normal;
+                rawHitObject.SampleVolume = 0;
                 rawHitObject.FileName = null;
             }
+
+            osuFile.Events.Samples.Clear();
 
             osuFile.Metadata.Version += " (KS)";
             osuFile.WriteOsuFile(Path.Combine(OsuBeatmapDir, osuFile.GetPath(osuFile.Metadata.Version)));
