@@ -138,9 +138,14 @@ public class Project : ViewModelBase
                     .Select(k =>
                     {
                         var success = HitsoundFiles.TryGetValue(k, out var cache);
-                        return (success, cache);
+                        if (success && cache!.SoundFile.IsFileLost)
+                        {
+                            return (isSuccess: false, cache);
+                        }
+
+                        return (isSuccess: success, cache);
                     })
-                    .Where(k => k.success && !k.cache!.SoundFile.IsFileLost)
+                    .Where(k => k.isSuccess && !k.cache!.SoundFile.IsFileLost)
                     .Select(k => k.cache!)
                     .ToArray();
                 var unhandledHitsoundCacheList = new List<HitsoundCache>(hitsoundCaches);
