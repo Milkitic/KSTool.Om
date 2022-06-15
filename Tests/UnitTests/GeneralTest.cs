@@ -68,7 +68,7 @@ public class GeneralTest
     [Fact]
     public async Task TestConvertHelper()
     {
-        await OsuToTemplateHelper.Convert(
+        await TemplateHelper.ConvertOsuFileToTemplate(
             @"C:\Users\milkitic\Desktop\1002455 supercell - Giniro Hikousen  (Ttm bootleg Edit)",
             "4K Hard", "Files/template.csv");
     }
