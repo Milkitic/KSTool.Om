@@ -2,12 +2,14 @@
 
 public class TimingRule
 {
-    public TimingRule(SoundCategory category, RangeValue<int> timingRange)
+    public TimingRule(SoundCategory category, RangeInfo rangeInfo)
     {
         Category = category;
-        TimingRange = timingRange;
+        TimingRange = rangeInfo.TimingRange;
+        Volume = rangeInfo.Volume;
     }
 
     public SoundCategory Category { get; }
     public RangeValue<int> TimingRange { get; }
+    public int Volume { get; }
 }

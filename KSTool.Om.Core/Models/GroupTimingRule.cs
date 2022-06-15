@@ -8,7 +8,7 @@ public class GroupTimingRule
     #region Configurable
 
     public string PreferredCategory { get; set; } = "New Category";
-    public ObservableCollection<RangeValue<int>> TimingRanges { get; set; } = new();
+    public ObservableCollection<RangeInfo> RangeInfos { get; set; } = new();
 
     #endregion
 
@@ -17,4 +17,10 @@ public class GroupTimingRule
 
     [YamlIgnore]
     public SoundCategory? Category { get; set; }
+}
+
+public class RangeInfo
+{
+    public int Volume { get; set; } = 100;
+    public RangeValue<int> TimingRange { get; set; }
 }

@@ -8,7 +8,7 @@ public class SoundCategory : ViewModelBase
     #region Configurable
 
     private string _name = "New Category";
-    private int _volume = 100;
+    private int _defaultVolume = 100;
 
     public string Name
     {
@@ -16,10 +16,10 @@ public class SoundCategory : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _name, value);
     }
 
-    public int Volume
+    public int DefaultVolume
     {
-        get => _volume;
-        set => this.RaiseAndSetIfChanged(ref _volume, value);
+        get => _defaultVolume;
+        set => this.RaiseAndSetIfChanged(ref _defaultVolume, value);
     }
 
     /// <summary>
