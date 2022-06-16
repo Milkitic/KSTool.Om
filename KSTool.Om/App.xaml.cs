@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using KSTool.Om.Windows;
+using Milki.Extensions.MouseKeyHook;
 
 namespace KSTool.Om
 {
@@ -13,10 +9,24 @@ namespace KSTool.Om
     /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+            KeyboardHook = KeyboardHookFactory.CreateApllication();
+            Current = this;
+        }
+
+        public IKeyboardHook KeyboardHook { get; }
+        public new static App Current { get; private set; } = null!;
+
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
             MainWindow = new MainWindow();
             MainWindow.Show();
+        }
+
+        private void App_OnExit(object sender, ExitEventArgs e)
+        {
+            KeyboardHook.Dispose();
         }
     }
 }

@@ -22,9 +22,14 @@ public sealed class TimelineViewerViewModel : ViewModelBase
     private double _scrollViewerActualWidth;
     private double _scrollViewerActualHeight;
     private double _editorScaleY = 1d;
+
+    private ObservableCollection<TimingLine> _timings = new();
+    private ObservableCollection<TimingLine> _visibleTimings = new();
+    private HashSet<TimingLine> _existsTimingHashSet = new();
+
     private ObservableCollection<TimingLine> _timingLines = new();
     private ObservableCollection<TimingLine> _visibleTimingLines = new();
-    private HashSet<TimingLine> _existsTimingHashSet = new();
+    private HashSet<TimingLine> _existsTimingLineHashSet = new();
     private double _scrollViewerVerticalOffset;
     private double _endOffset;
     private double _startOffset;
@@ -59,6 +64,7 @@ public sealed class TimelineViewerViewModel : ViewModelBase
 
             SetVisibleObjects();
             SetVisibleTimingLines();
+            SetVisibleTimings();
             ResetInterface();
 
             OnPropertyChanged(nameof(EditorHeight));
@@ -76,6 +82,7 @@ public sealed class TimelineViewerViewModel : ViewModelBase
 
             ReloadTimings();
             SetVisibleTimingLines();
+            SetVisibleTimings();
             ResetTimingInterface();
 
             OnPropertyChanged();
@@ -106,6 +113,18 @@ public sealed class TimelineViewerViewModel : ViewModelBase
     {
         get => _visibleTimingLines;
         set => this.RaiseAndSetIfChanged(ref _visibleTimingLines, value);
+    }
+
+    public ObservableCollection<TimingLine> Timings
+    {
+        get => _timings;
+        set => this.RaiseAndSetIfChanged(ref _timings, value);
+    }
+
+    public ObservableCollection<TimingLine> VisibleTimings
+    {
+        get => _visibleTimings;
+        set => this.RaiseAndSetIfChanged(ref _visibleTimings, value);
     }
 
     public int KeyMode
@@ -157,7 +176,7 @@ public sealed class TimelineViewerViewModel : ViewModelBase
         this.OsuFile = osuFile;
         // init editors
         EditorDuration = (int)(osuFile.HitObjects.MaxTime + 3000);
-        EditorScaleY = 0.4;
+        EditorScaleY = 0.25;
         EditorRhythm = 4;
     }
 
@@ -172,6 +191,7 @@ public sealed class TimelineViewerViewModel : ViewModelBase
             .Where(k => !k.IsInherit)
             .ToArray();
         var list = new List<TimingLine>();
+        var timings = new List<TimingLine>();
         for (int i = 0; i < redLines.Length; i++)
         {
             decimal nextTime = Convert.ToDecimal(i == redLines.Length - 1
@@ -194,6 +214,18 @@ public sealed class TimelineViewerViewModel : ViewModelBase
 
                 lineVm.ResetInterface();
                 list.Add(lineVm);
+                if (j == 0)
+                {
+                    //var lineVm2 = new TimingLine(this)
+                    //{
+                    //    Offset = Convert.ToInt32(current),
+                    //    Rhythm = 0
+                    //};
+
+                    //lineVm2.ResetInterface();
+                    timings.Add(lineVm);
+                }
+
                 current += interval;
                 j++;
                 if (j == count) j = 0;
@@ -201,6 +233,7 @@ public sealed class TimelineViewerViewModel : ViewModelBase
         }
 
         TimingLines = new ObservableCollection<TimingLine>(list);
+        Timings = new ObservableCollection<TimingLine>(timings);
     }
 
 
@@ -271,6 +304,36 @@ public sealed class TimelineViewerViewModel : ViewModelBase
         _existsObjHashSet = visibles;
     }
 
+    public void SetVisibleTimings()
+    {
+        if (Timings.Count == 0) return;
+        var startOffset = EditorHeight - (ScrollViewerVerticalOffset + ScrollViewerActualHeight) - 67;
+        var endOffset = EditorHeight - ScrollViewerVerticalOffset + 67;
+        var startTime = startOffset / EditorScaleY /*- 200*/;
+        var endTime = endOffset / EditorScaleY /*+ 200*/;
+
+        //Console.WriteLine("topOffset: " + topOffset + "; bottomOffset: " + bottomOffset +
+        //                  "; startTime: " + startTime + "; endTime: " + endTime);
+        var visibles =
+            new HashSet<TimingLine>(
+                Timings.Where(k => k.Offset >= startTime && k.Offset < endTime)
+            );
+        var newTimings = visibles.Where(k => !_existsTimingHashSet.Contains(k));
+        var existTimings = visibles.Where(k => _existsTimingHashSet.Contains(k));
+        var notExistsAnyMore = _existsTimingHashSet.Except(existTimings.Concat(newTimings));
+        foreach (var objectBase in notExistsAnyMore)
+        {
+            VisibleTimings.Remove(objectBase);
+        }
+
+        foreach (var objectBase in newTimings)
+        {
+            VisibleTimings.Add(objectBase);
+        }
+
+        _existsTimingHashSet = visibles;
+    }
+
     public void SetVisibleTimingLines()
     {
         if (TimingLines.Count == 0) return;
@@ -285,9 +348,9 @@ public sealed class TimelineViewerViewModel : ViewModelBase
             new HashSet<TimingLine>(
                 TimingLines.Where(k => k.Offset >= startTime && k.Offset < endTime)
             );
-        var newTimings = visibles.Where(k => !_existsTimingHashSet.Contains(k));
-        var existTimings = visibles.Where(k => _existsTimingHashSet.Contains(k));
-        var notExistsAnyMore = _existsTimingHashSet.Except(existTimings.Concat(newTimings));
+        var newTimings = visibles.Where(k => !_existsTimingLineHashSet.Contains(k));
+        var existTimings = visibles.Where(k => _existsTimingLineHashSet.Contains(k));
+        var notExistsAnyMore = _existsTimingLineHashSet.Except(existTimings.Concat(newTimings));
         foreach (var objectBase in notExistsAnyMore)
         {
             VisibleTimingLines.Remove(objectBase);
@@ -298,7 +361,7 @@ public sealed class TimelineViewerViewModel : ViewModelBase
             VisibleTimingLines.Add(objectBase);
         }
 
-        _existsTimingHashSet = visibles;
+        _existsTimingLineHashSet = visibles;
     }
 
     public void ResetInterface()
@@ -314,6 +377,11 @@ public sealed class TimelineViewerViewModel : ViewModelBase
 
     public void ResetTimingInterface()
     {
+        foreach (var visibleObject in Timings)
+        {
+            visibleObject.ResetInterface();
+        }
+
         foreach (var visibleObject in TimingLines)
         {
             visibleObject.ResetInterface();
@@ -368,6 +436,7 @@ public partial class TimelineViewer : UserControl
         _viewModel.ScrollViewerVerticalOffset = ScrollViewer.VerticalOffset;
         _viewModel.SetVisibleObjects();
         _viewModel.SetVisibleTimingLines();
+        _viewModel.SetVisibleTimings();
 
     }
 

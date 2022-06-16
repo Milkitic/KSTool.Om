@@ -31,109 +31,110 @@
             Background="#121212"
             ScrollChanged="ScrollViewer_OnScrollChanged"
             SizeChanged="ScrollViewer_OnSizeChanged">
-            <Canvas
-                x:Name="ItemsCanvas"
-                Width="{Binding EditorWidth}"
-                Height="{Binding EditorHeight}"
-                Background="Transparent">
-                <Rectangle Fill="Transparent" />
-                <userControls:CachingItemsControl
-                    x:Name="ColumnsItemsControl"
-                    Canvas.Bottom="0"
+            <Grid x:Name="ScrollViewerInnerContainer">
+                <Canvas
+                    x:Name="ItemsCanvas"
                     Width="{Binding EditorWidth}"
                     Height="{Binding EditorHeight}"
-                    IsHitTestVisible="False"
-                    ItemsSource="{Binding KeyMode, Converter={StaticResource Int2ArrayConverter}}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="objects:TimingLine">
-                            <Rectangle
-                                Width="1"
-                                HorizontalAlignment="Right"
-                                Stroke="#40f0f0f0"
-                                StrokeThickness="0,0,1,0" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="{Binding KeyMode}" Rows="1" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </userControls:CachingItemsControl>
-                <userControls:CachingItemsControl
-                    x:Name="TimingsItemsControl"
-                    Canvas.Bottom="0"
-                    Width="{Binding EditorWidth}"
-                    Height="{Binding EditorHeight}"
-                    IsHitTestVisible="False"
-                    ItemsSource="{Binding VisibleTimingLines}"
-                    SnapsToDevicePixels="True"
-                    UseLayoutRounding="True">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="objects:TimingLine">
-                            <Rectangle
-                                Width="{Binding RealtimeWidth}"
-                                Height="1"
-                                Opacity="0.6"
-                                StrokeThickness="0,0,0,1">
-                                <Rectangle.Style>
-                                    <Style TargetType="Rectangle">
-                                        <Setter Property="Stroke" Value="#646464" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0">
-                                                <Setter Property="Stroke" Value="White" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.125">
-                                                <Setter Property="Stroke" Value="#B0B070" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.25">
-                                                <Setter Property="Stroke" Value="#2040F0" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.375">
-                                                <Setter Property="Stroke" Value="#B0B070" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.5">
-                                                <Setter Property="Stroke" Value="#F02040" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.625">
-                                                <Setter Property="Stroke" Value="#B0B070" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.75">
-                                                <Setter Property="Stroke" Value="#2040F0" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.875">
-                                                <Setter Property="Stroke" Value="#B0B070" />
-                                            </DataTrigger>
+                    Background="Transparent">
+                    <Rectangle Fill="Transparent" />
+                    <userControls:CachingItemsControl
+                        x:Name="ColumnsItemsControl"
+                        Canvas.Bottom="0"
+                        Width="{Binding EditorWidth}"
+                        Height="{Binding EditorHeight}"
+                        IsHitTestVisible="False"
+                        ItemsSource="{Binding KeyMode, Converter={StaticResource Int2ArrayConverter}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="objects:TimingLine">
+                                <Rectangle
+                                    Width="1"
+                                    HorizontalAlignment="Right"
+                                    Stroke="#40f0f0f0"
+                                    StrokeThickness="0,0,1,0" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="{Binding KeyMode}" Rows="1" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </userControls:CachingItemsControl>
+                    <userControls:CachingItemsControl
+                        x:Name="TimingLinesItemsControl"
+                        Canvas.Bottom="0"
+                        Width="{Binding EditorWidth}"
+                        Height="{Binding EditorHeight}"
+                        IsHitTestVisible="False"
+                        ItemsSource="{Binding VisibleTimingLines}"
+                        SnapsToDevicePixels="True"
+                        UseLayoutRounding="True">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="objects:TimingLine">
+                                <Rectangle
+                                    Width="{Binding RealtimeWidth}"
+                                    Height="1"
+                                    Opacity="0.6"
+                                    StrokeThickness="0,0,0,1">
+                                    <Rectangle.Style>
+                                        <Style TargetType="Rectangle">
+                                            <Setter Property="Stroke" Value="#646464" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0">
+                                                    <Setter Property="Stroke" Value="White" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.125">
+                                                    <Setter Property="Stroke" Value="#B0B070" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.25">
+                                                    <Setter Property="Stroke" Value="#2040F0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.375">
+                                                    <Setter Property="Stroke" Value="#B0B070" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.5">
+                                                    <Setter Property="Stroke" Value="#F02040" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.625">
+                                                    <Setter Property="Stroke" Value="#B0B070" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.75">
+                                                    <Setter Property="Stroke" Value="#2040F0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.875">
+                                                    <Setter Property="Stroke" Value="#B0B070" />
+                                                </DataTrigger>
 
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.2">
-                                                <Setter Property="Stroke" Value="#40A070" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.4">
-                                                <Setter Property="Stroke" Value="#40A070" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.6">
-                                                <Setter Property="Stroke" Value="#40A070" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.8">
-                                                <Setter Property="Stroke" Value="#40A070" />
-                                            </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.2">
+                                                    <Setter Property="Stroke" Value="#40A070" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.4">
+                                                    <Setter Property="Stroke" Value="#40A070" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.6">
+                                                    <Setter Property="Stroke" Value="#40A070" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.8">
+                                                    <Setter Property="Stroke" Value="#40A070" />
+                                                </DataTrigger>
 
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.16666666666666666">
-                                                <Setter Property="Stroke" Value="#80e050F0" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.3333333333333333">
-                                                <Setter Property="Stroke" Value="#e050F0" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.6666666666666666">
-                                                <Setter Property="Stroke" Value="#e050F0" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Rhythm}" Value="0.83333333333333333">
-                                                <Setter Property="Stroke" Value="#80e050F0" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Rectangle.Style>
-                            </Rectangle>
-                            <!--<Path Opacity="0.7" StrokeThickness="1">
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.16666666666666666">
+                                                    <Setter Property="Stroke" Value="#80e050F0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.3333333333333333">
+                                                    <Setter Property="Stroke" Value="#e050F0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.6666666666666666">
+                                                    <Setter Property="Stroke" Value="#e050F0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Rhythm}" Value="0.83333333333333333">
+                                                    <Setter Property="Stroke" Value="#80e050F0" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Rectangle.Style>
+                                </Rectangle>
+                                <!--<Path Opacity="0.7" StrokeThickness="1">
                                 <Path.Data>
                                     <PathGeometry>
                                         <PathFigure StartPoint="0,0">
@@ -199,62 +200,95 @@
                                     </Style>
                                 </Path.Style>
                             </Path>-->
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="Canvas.Left" Value="{Binding RealtimeX, Mode=TwoWay}" />
-                            <Setter Property="Canvas.Bottom" Value="{Binding RealtimeY, Mode=TwoWay}" />
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </userControls:CachingItemsControl>
-                <userControls:CachingItemsControl
-                    x:Name="ItemsControl"
-                    Canvas.Bottom="0"
-                    Width="{Binding EditorWidth}"
-                    Height="{Binding EditorHeight}"
-                    ItemsSource="{Binding VisibleObjects}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="objects:ObjectBase">
-                            <Rectangle
-                                x:Name="Rect"
-                                Width="{Binding RealtimeWidth}"
-                                Fill="#904090E0"
-                                Stroke="#FF4090E0"
-                                StrokeThickness="2">
-                                <Rectangle.Height>
-                                    <MultiBinding Converter="{StaticResource HeightConverter}">
-                                        <Binding />
-                                        <Binding Path="RealtimeY" />
-                                    </MultiBinding>
-                                </Rectangle.Height>
-                            </Rectangle>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="Canvas.Left" Value="{Binding RealtimeX, Mode=TwoWay}" />
-                            <Setter Property="Canvas.Bottom" Value="{Binding RealtimeY, Mode=TwoWay}" />
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </userControls:CachingItemsControl>
-            </Canvas>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Left" Value="{Binding RealtimeX, Mode=TwoWay}" />
+                                <Setter Property="Canvas.Bottom" Value="{Binding RealtimeY, Mode=TwoWay}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </userControls:CachingItemsControl>
+                    <userControls:CachingItemsControl
+                        x:Name="TimingsItemsControl"
+                        Canvas.Bottom="0"
+                        Width="{Binding EditorWidth}"
+                        Height="{Binding EditorHeight}"
+                        IsHitTestVisible="False"
+                        ItemsSource="{Binding VisibleTimings}"
+                        SnapsToDevicePixels="True"
+                        UseLayoutRounding="True">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="objects:TimingLine">
+                                <TextBlock
+                                    Margin="2,0,0,0"
+                                    FontSize="11"
+                                    Foreground="{StaticResource SecondaryTextBrush}"
+                                    Text="{Binding Offset, Converter={StaticResource Int2TimeSpanConverter}, StringFormat=mm\\:ss\\.fff}"
+                                    TextOptions.TextFormattingMode="Display" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Left" Value="{Binding RealtimeX, Mode=TwoWay}" />
+                                <Setter Property="Canvas.Bottom" Value="{Binding RealtimeY, Mode=TwoWay}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </userControls:CachingItemsControl>
+                    <userControls:CachingItemsControl
+                        x:Name="ItemsControl"
+                        Canvas.Bottom="0"
+                        Width="{Binding EditorWidth}"
+                        Height="{Binding EditorHeight}"
+                        ItemsSource="{Binding VisibleObjects}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="objects:ObjectBase">
+                                <Rectangle
+                                    x:Name="Rect"
+                                    Width="{Binding RealtimeWidth}"
+                                    Fill="#904090E0"
+                                    Stroke="#FF4090E0"
+                                    StrokeThickness="2">
+                                    <Rectangle.Height>
+                                        <MultiBinding Converter="{StaticResource HeightConverter}">
+                                            <Binding />
+                                            <Binding Path="RealtimeY" />
+                                        </MultiBinding>
+                                    </Rectangle.Height>
+                                </Rectangle>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Left" Value="{Binding RealtimeX, Mode=TwoWay}" />
+                                <Setter Property="Canvas.Bottom" Value="{Binding RealtimeY, Mode=TwoWay}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </userControls:CachingItemsControl>
+                </Canvas>
+            </Grid>
         </userControls:AnimatedScrollViewer>
         <Border
             Grid.Row="0"
             Grid.Column="1"
             Width="50"
-            Background="#121212">
+            Background="#121212"
+            Visibility="Collapsed">
             <Border>
                 <Border.Background>
                     <VisualBrush Visual="{Binding ElementName=ItemsCanvas}" />
@@ -282,8 +316,8 @@
                         AutoToolTipPlacement="BottomRight"
                         AutoToolTipPrecision="2"
                         IsSnapToTickEnabled="True"
-                        Maximum="2"
-                        Minimum="0.1"
+                        Maximum="1"
+                        Minimum="0.05"
                         TickFrequency="0.01"
                         Value="{Binding EditorScaleY}" />
                     <TextBlock

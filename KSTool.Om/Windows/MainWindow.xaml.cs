@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using HandyControl.Controls;
 using KSTool.Om.Core;
 using KSTool.Om.Core.Models;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using Milki.Extensions.MouseKeyHook;
+using Window = System.Windows.Window;
 
 namespace KSTool.Om.Windows;
 
@@ -33,31 +38,20 @@ public class MainWindowViewModel : ViewModelBase
 public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel _viewModel;
+    private readonly List<Guid> _hotKeyHandles = new();
+    private bool _opening;
 
     public MainWindow()
     {
         InitializeComponent();
         DataContext = _viewModel = new MainWindowViewModel();
-    }
-
-    private bool CloseProject()
-    {
-        if (!PreCloseProject()) return false;
-
-        _viewModel.Project?.Dispose();
-        _viewModel.Project = null;
-        // ...
-        return true;
-    }
-
-    private bool PreCloseProject()
-    {
-        if (_viewModel.Project?.IsModified == true)
+        App.Current.KeyboardHook.RegisterHotkey(ModifierKeys.Control, HookKeys.O, async (_, _, type) =>
         {
-            //...
-        }
-
-        return true;
+            if (type == KeyAction.KeyDown)
+            {
+                await Dispatcher.InvokeAsync(async () => await OpenProjectAsync());
+            }
+        });
     }
 
     private async void miCreateProject_OnClick(object sender, RoutedEventArgs e)
@@ -72,65 +66,29 @@ public partial class MainWindow : Window
         if (result == true)
         {
             if (!CloseProject()) return;
-            _viewModel.Project = await Project.CreateNewAsync(window.ProjectName!, window.BeatmapDirectory!);
+            LoadProject(await Project.CreateNewAsync(window.ProjectName!, window.BeatmapDirectory!));
         }
+    }
+
+    private void miCloseProject_OnClick(object sender, RoutedEventArgs e)
+    {
+        CloseProject();
     }
 
     private void miSaveProject_OnClick(object sender, RoutedEventArgs e)
     {
-        string? savePath = _viewModel.Project!.ProjectPath;
-        if (savePath == null)
-        {
-            var ofd = new CommonSaveFileDialog
-            {
-                DefaultFileName = _viewModel.Project.ProjectName,
-                DefaultExtension = ".ksproj"
-            };
-            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", ".ksproj"));
-
-            if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                var folder = ofd.FileName;
-                savePath = folder;
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        _viewModel.Project.Save(savePath);
-        _viewModel.Project.ProjectPath = savePath;
+        SaveProject();
     }
 
     private async void miOpenProject_OnClick(object sender, RoutedEventArgs e)
     {
-        if (!PreCloseProject()) return;
+        await OpenProjectAsync();
+    }
 
-        var ofd = new CommonOpenFileDialog
-        {
-            DefaultExtension = ".ksproj"
-        };
-        ofd.Filters.Add(new CommonFileDialogFilter("KS Project", ".ksproj"));
-
-        if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
-        {
-            var fileName = ofd.FileName;
-            _viewModel.IsLoading = true;
-            try
-            {
-                if (!CloseProject()) return;
-                _viewModel.Project = await Project.LoadAsync(fileName);
-            }
-            catch (Exception ex)
-            {
-                MsgDialog.Error("Please choose another one.", ex.Message);
-            }
-            finally
-            {
-                _viewModel.IsLoading = false;
-            }
-        }
+    private void LoadProject(Project project)
+    {
+        _viewModel.Project = project;
+        RegisterHotKeys();
     }
 
     private void miOpenBeatmapFolder_OnClick(object sender, RoutedEventArgs e)
@@ -171,5 +129,138 @@ public partial class MainWindow : Window
                 timelineViewer.Load(currentDifficulty.OsuFile);
             }
         }
+    }
+
+    private void SaveProject()
+    {
+        string? savePath = _viewModel.Project!.ProjectPath;
+        if (savePath == null)
+        {
+            var ofd = new CommonSaveFileDialog
+            {
+                DefaultFileName = _viewModel.Project.ProjectName,
+                DefaultExtension = ".ksproj"
+            };
+            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", ".ksproj"));
+
+            if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var folder = ofd.FileName;
+                savePath = folder;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        _viewModel.Project.Save(savePath);
+        _viewModel.Project.ProjectPath = savePath;
+
+        Growl.Success("Project Saved.");
+    }
+
+    private void RegisterHotKeys()
+    {
+        _hotKeyHandles.Add(App.Current.KeyboardHook.RegisterHotkey(
+            ModifierKeys.Control, HookKeys.S, (_, _, type) =>
+            {
+                if (type == KeyAction.KeyDown)
+                {
+                    Dispatcher.Invoke(() => SaveProject());
+                }
+            }));
+        _hotKeyHandles.Add(App.Current.KeyboardHook.RegisterHotkey(
+            ModifierKeys.Control, HookKeys.Left, (_, _, type) =>
+            {
+                if (type == KeyAction.KeyDown)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (_viewModel.Project is { SelectedHitsound: { } cache, SelectedCategory: { } category })
+                        {
+                            category.SoundFiles.Add(cache.SoundFile);
+                        }
+                    });
+                }
+            }));
+    }
+
+    private void UnregisterHotKeys()
+    {
+        foreach (var hotKeyHandle in _hotKeyHandles)
+        {
+            App.Current.KeyboardHook.TryUnregister(hotKeyHandle);
+        }
+
+        _hotKeyHandles.Clear();
+    }
+
+    private async Task OpenProjectAsync()
+    {
+        if (_opening)
+        {
+            return;
+        }
+
+        try
+        {
+            _opening = true;
+            if (!PreCloseProject()) return;
+
+            var ofd = new CommonOpenFileDialog
+            {
+                DefaultExtension = ".ksproj"
+            };
+
+            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", ".ksproj"));
+
+            if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                _opening = false;
+                var fileName = ofd.FileName;
+                _viewModel.IsLoading = true;
+                try
+                {
+                    var project = await Project.LoadAsync(fileName);
+                    if (!CloseProject()) return;
+                    LoadProject(project);
+                }
+                catch (Exception ex)
+                {
+                    Growl.Error($"Error while loading project: \r\n{ex.Message}\r\n{fileName}");
+                }
+                finally
+                {
+                    _viewModel.IsLoading = false;
+                }
+            }
+        }
+        finally
+        {
+            _opening = false;
+        }
+    }
+
+    private bool CloseProject()
+    {
+        if (!PreCloseProject()) return false;
+
+        _viewModel.Project?.Dispose();
+        _viewModel.Project = null;
+        // ...
+
+        UnregisterHotKeys();
+        return true;
+    }
+
+    private bool PreCloseProject()
+    {
+        if (_viewModel.Project?.IsModified == true)
+        {
+            //...
+        }
+
+        return true;
     }
 }

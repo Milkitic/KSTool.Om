@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:KSTool.Om.Converters"
     xmlns:local="clr-namespace:KSTool.Om"
+    Exit="App_OnExit"
     ShutdownMode="OnExplicitShutdown"
     Startup="App_OnStartup">
     <Application.Resources>
@@ -13,6 +14,7 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <converters:Int2TimeSpanConverter x:Key="Int2TimeSpanConverter" />
             <converters:IsNullToIsEnabledConverter x:Key="IsNullToIsEnabledConverter" />
             <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
             <converters:TitleConverter x:Key="TitleConverter" />

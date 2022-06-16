@@ -2,7 +2,7 @@
 
 public class SoundFile : ViewModelBase
 {
-    private string? _relativePath;
+    public string? CachedRelativePath { get; private set; }
     private string? _baseFolder;
 
     private string _filePath = "";
@@ -20,10 +20,10 @@ public class SoundFile : ViewModelBase
 
     public string GetRelativePath(string baseFolder)
     {
-        if (_relativePath != null && baseFolder == _baseFolder) return _relativePath;
+        if (CachedRelativePath != null && baseFolder == _baseFolder) return CachedRelativePath;
         _baseFolder = baseFolder;
 
         var relativePath = IOUtils.GetRelativePath(baseFolder, FilePath);
-        return _relativePath = relativePath;
+        return CachedRelativePath = relativePath;
     }
 }

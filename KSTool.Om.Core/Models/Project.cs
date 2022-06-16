@@ -5,6 +5,7 @@ using Coosu.Beatmap.Sections.Event;
 using Coosu.Beatmap.Sections.HitObject;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Milki.Extensions.MixPlayer.Devices;
 using Milki.Extensions.MixPlayer.NAudioExtensions;
 using YamlDotNet.Serialization;
 
@@ -12,16 +13,22 @@ namespace KSTool.Om.Core.Models;
 
 public class Project : ViewModelBase, IDisposable
 {
+    private SoundCategory? _selectedCategory;
+    private HitsoundCache? _selectedHitsound;
     private const string CurrentProjectVersion = "2.0";
 
     #region Configurable
 
+    [YamlMember]
     public string? KsProjectVersion { get; set; }
 
+    [YamlMember]
     public string? TemplateCsvFile { get; set; }
 
+    [YamlMember]
     public string ProjectName { get; set; } = "New Project";
 
+    [YamlMember]
     public string OsuBeatmapDir { get; set; } = ".";
 
     [YamlMember]
@@ -39,10 +46,24 @@ public class Project : ViewModelBase, IDisposable
     public Dictionary<string, HitsoundCache> HitsoundFiles { get; } = new();
 
     [YamlIgnore]
+    public HitsoundCache? SelectedHitsound
+    {
+        get => _selectedHitsound;
+        set => this.RaiseAndSetIfChanged(ref _selectedHitsound, value);
+    }
+
+    [YamlIgnore]
     public string? ProjectPath { get; set; }
 
     [YamlIgnore]
     public AudioPlaybackEngine? Engine { get; set; }
+
+    [YamlIgnore]
+    public SoundCategory? SelectedCategory
+    {
+        get => _selectedCategory;
+        set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+    }
 
     [YamlIgnore]
     public ProjectDifficulty? CurrentDifficulty { get; set; }
@@ -226,7 +247,7 @@ public class Project : ViewModelBase, IDisposable
             project.LoadTemplateFile(project.TemplateCsvFile);
         }
 
-        project.Engine = new AudioPlaybackEngine();
+        project.Engine = new AudioPlaybackEngine(DeviceDescription.WasapiDefault);
 
         var files = IOUtils.EnumerateFiles(project.OsuBeatmapDir, ".wav", ".mp3", ".ogg", ".osu");
         var ghostReferences = new Dictionary<string, LocalOsuFile>();
@@ -317,6 +338,8 @@ public class Project : ViewModelBase, IDisposable
                 }
             }
         }
+
+        project.CurrentDifficulty = project.Difficulties.FirstOrDefault();
     }
 
     private HashSet<TimingRule> GetCurrentTimingRules(List<TimingRule> flattenRules, int timing)

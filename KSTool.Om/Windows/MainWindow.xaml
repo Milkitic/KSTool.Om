@@ -35,6 +35,10 @@
                         Click="miSaveProject_OnClick"
                         Header="_Save"
                         IsEnabled="{Binding Project, Converter={StaticResource IsNullToIsEnabledConverter}}" />
+                    <MenuItem
+                        Click="miCloseProject_OnClick"
+                        Header="_Close"
+                        IsEnabled="{Binding Project, Converter={StaticResource IsNullToIsEnabledConverter}}" />
                     <Separator />
                     <MenuItem
                         Click="miOpenBeatmapFolder_OnClick"
@@ -44,7 +48,7 @@
                     <MenuItem Click="miExit_OnClick" Header="_Exit" />
                 </MenuItem>
                 <MenuItem Header="_View">
-                    <MenuItem Header="_Category Manager" IsChecked="True" />
+                    <MenuItem Header="_Categories" IsChecked="True" />
                 </MenuItem>
                 <MenuItem Header="_Tool">
                     <MenuItem Header="_Template Helper..." />
@@ -53,33 +57,61 @@
         </DockPanel>
         <Grid
             Grid.Row="1"
-            Margin="10"
+            Margin="0"
             Visibility="{Binding Project, Converter={StaticResource IsNullToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="380" />
+            </Grid.RowDefinitions>
+
             <Grid.ColumnDefinitions>
-                <ColumnDefinition MinWidth="400" />
-                <ColumnDefinition Width="700" MinWidth="270" />
+                <ColumnDefinition Width="410" MinWidth="410" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="300" MinWidth="200" />
             </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Margin="15,15,5,10"
+                FontSize="21"
+                Text="Preview" />
             <userControls:TimelineViewer
                 x:Name="timelineViewer"
+                Grid.Row="1"
+                Grid.RowSpan="2"
                 Grid.Column="0"
-                Margin="5,5,20,5" />
+                Margin="15,5,20,15" />
             <GridSplitter
+                Grid.Row="0"
+                Grid.RowSpan="3"
                 Grid.Column="0"
                 Width="5"
-                Margin="0,-10"
-                Background="{StaticResource RegionBrush}" />
+                Margin="0,0"
+                Background="{StaticResource RegionBrush}"
+                ResizeBehavior="CurrentAndNext" />
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="15,15,5,10"
+                FontSize="21"
+                Text="Difficulty Settings" />
             <StackPanel
+                Grid.Row="1"
                 Grid.Column="1"
                 Margin="15,5,5,5"
                 HorizontalAlignment="Left"
                 Orientation="Vertical">
                 <TextBlock
-                    Margin="0,5"
+                    Margin="0,0,0,5"
                     FontSize="14"
-                    Text="Current Difficulty" />
+                    Text="Selected Difficulty" />
                 <ComboBox
                     Width="250"
-                    Margin="0,5"
+                    Height="26"
+                    MinHeight="0"
+                    Margin="0,0,0,5"
+                    Padding="8,0"
+                    FontSize="12"
                     ItemsSource="{Binding Project.Difficulties}"
                     SelectedItem="{Binding Project.CurrentDifficulty}"
                     SelectionChanged="Selector_OnSelectionChanged">
@@ -90,6 +122,65 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </StackPanel>
+            <GridSplitter
+                Grid.Row="2"
+                Grid.Column="1"
+                Width="10000"
+                Height="5"
+                Margin="0,0,-10,0"
+                VerticalAlignment="Top"
+                Panel.ZIndex="1"
+                Background="{StaticResource RegionBrush}"
+                ResizeDirection="Rows" />
+            <Grid
+                Grid.Row="2"
+                Grid.Column="1"
+                Margin="15,15,5,15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Margin="0,0,0,10"
+                    FontSize="21"
+                    Text="Categories" />
+                <userControls:CategoryManager
+                    Grid.Row="1"
+                    Margin="0,0,15,0"
+                    DataContext="{Binding Project}" />
+            </Grid>
+            <GridSplitter
+                Grid.Row="0"
+                Grid.RowSpan="3"
+                Grid.Column="1"
+                Width="5"
+                Margin="0,-10"
+                Background="{StaticResource RegionBrush}"
+                ResizeBehavior="CurrentAndNext" />
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="2"
+                Margin="15,15,5,10"
+                FontSize="21"
+                Text="Sound library" />
+            <Border
+                Grid.Row="1"
+                Grid.RowSpan="2"
+                Grid.Column="2"
+                Panel.ZIndex="2"
+                Background="{StaticResource SecondaryRegionBrush}">
+                <ListBox
+                    Margin="15,0,15,15"
+                    ItemsSource="{Binding Project.HitsoundFiles.Values}"
+                    SelectedItem="{Binding Project.SelectedHitsound, Mode=TwoWay}"
+                    Style="{StaticResource ListBox.Small}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding SoundFile.CachedRelativePath}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
         </Grid>
 
         <Border
