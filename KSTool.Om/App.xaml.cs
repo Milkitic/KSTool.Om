@@ -11,7 +11,7 @@ namespace KSTool.Om
     {
         public App()
         {
-            KeyboardHook = KeyboardHookFactory.CreateApllication();
+            KeyboardHook = KeyboardHookFactory.CreateApplication();
             Current = this;
         }
 
