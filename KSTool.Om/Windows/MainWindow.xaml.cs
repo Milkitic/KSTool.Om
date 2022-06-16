@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using KSTool.Om.Core;
 using KSTool.Om.Core.Models;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -53,10 +42,7 @@ public partial class MainWindow : Window
 
     private bool CloseProject()
     {
-        if (_viewModel.Project?.IsModified == true)
-        {
-            //...
-        }
+        if (!PreCloseProject()) return false;
 
         _viewModel.Project?.Dispose();
         _viewModel.Project = null;
@@ -64,8 +50,20 @@ public partial class MainWindow : Window
         return true;
     }
 
+    private bool PreCloseProject()
+    {
+        if (_viewModel.Project?.IsModified == true)
+        {
+            //...
+        }
+
+        return true;
+    }
+
     private async void miCreateProject_OnClick(object sender, RoutedEventArgs e)
     {
+        if (!PreCloseProject()) return;
+
         var window = new CreateProjectWindow
         {
             Owner = this
@@ -73,6 +71,7 @@ public partial class MainWindow : Window
         var result = window.ShowDialog();
         if (result == true)
         {
+            if (!CloseProject()) return;
             _viewModel.Project = await Project.CreateNewAsync(window.ProjectName!, window.BeatmapDirectory!);
         }
     }
@@ -106,6 +105,8 @@ public partial class MainWindow : Window
 
     private async void miOpenProject_OnClick(object sender, RoutedEventArgs e)
     {
+        if (!PreCloseProject()) return;
+
         var ofd = new CommonOpenFileDialog
         {
             DefaultExtension = ".ksproj"
@@ -118,6 +119,7 @@ public partial class MainWindow : Window
             _viewModel.IsLoading = true;
             try
             {
+                if (!CloseProject()) return;
                 _viewModel.Project = await Project.LoadAsync(fileName);
             }
             catch (Exception ex)
@@ -151,9 +153,23 @@ public partial class MainWindow : Window
 
     private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
     {
-        if (!CloseProject())
+        if (!PreCloseProject())
         {
             e.Cancel = true;
+        }
+
+        CloseProject();
+    }
+
+    private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_viewModel.Project != null)
+        {
+            var currentDifficulty = _viewModel.Project!.CurrentDifficulty;
+            if (currentDifficulty is { IsDifficultyLost: false, OsuFile: { } })
+            {
+                timelineViewer.Load(currentDifficulty.OsuFile);
+            }
         }
     }
 }

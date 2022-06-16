@@ -15,6 +15,11 @@ public abstract class ViewModelBase : IInvokableViewModel, INotifyPropertyChange
     /// <inheritdoc />
     public event PropertyChangingEventHandler? PropertyChanging;
 
+    protected virtual void OnPropertyChanging([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
+    }
+
     /// <summary>
     /// 通知UI更新操作
     /// </summary>

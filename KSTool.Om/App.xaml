@@ -9,11 +9,12 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/skindark.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <converters:IsNullToIsEnabledConverter x:Key="IsNullToIsEnabledConverter" />
+            <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
             <converters:TitleConverter x:Key="TitleConverter" />
         </ResourceDictionary>
     </Application.Resources>
