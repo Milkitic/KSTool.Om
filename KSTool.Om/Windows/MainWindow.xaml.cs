@@ -5,11 +5,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using HandyControl.Controls;
 using KSTool.Om.Core;
 using KSTool.Om.Core.Models;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Milki.Extensions.MouseKeyHook;
+using ModifierKeys = Milki.Extensions.MouseKeyHook.ModifierKeys;
 using Window = System.Windows.Window;
 
 namespace KSTool.Om.Windows;
@@ -167,7 +169,11 @@ public partial class MainWindow : Window
             {
                 if (type == KeyAction.KeyDown)
                 {
-                    Dispatcher.Invoke(() => SaveProject());
+                    Dispatcher.Invoke(() =>
+                    {
+                        this.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
+                        SaveProject();
+                    });
                 }
             }));
         _hotKeyHandles.Add(App.Current.KeyboardHook.RegisterHotkey(
@@ -175,13 +181,7 @@ public partial class MainWindow : Window
             {
                 if (type == KeyAction.KeyDown)
                 {
-                    Dispatcher.Invoke(() =>
-                    {
-                        if (_viewModel.Project is { SelectedHitsound: { } cache, SelectedCategory: { } category })
-                        {
-                            category.SoundFiles.Add(cache.SoundFile);
-                        }
-                    });
+                    Dispatcher.Invoke(() => categoryManager.AddSoundToCategory());
                 }
             }));
     }
@@ -261,5 +261,37 @@ public partial class MainWindow : Window
         }
 
         return true;
+    }
+
+    private void lbHitsounds_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem item)
+        {
+            PlaySelected((HitsoundCache)item.DataContext);
+        }
+    }
+
+    private void LbHitsounds_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems is { Count: > 0 })
+        {
+            PlaySelected((HitsoundCache)e.AddedItems[0]!);
+        }
+    }
+
+    private void PlaySelected(HitsoundCache hitsoundCache)
+    {
+        if (hitsoundCache.CachedSound == null) return;
+
+        AudioManager.Instance.TryPlaySound(hitsoundCache.CachedSound);
+    }
+
+    private void cbShowUsed_OnCheckChanged(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.Project != null)
+        {
+            _viewModel.Project.ComputeUnusedHitsounds();
+            _viewModel.Project.RefreshShowHitsoundType();
+        }
     }
 }

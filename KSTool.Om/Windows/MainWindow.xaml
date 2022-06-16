@@ -145,6 +145,7 @@
                     FontSize="21"
                     Text="Categories" />
                 <userControls:CategoryManager
+                    x:Name="categoryManager"
                     Grid.Row="1"
                     Margin="0,0,15,0"
                     DataContext="{Binding Project}" />
@@ -163,16 +164,22 @@
                 Margin="15,15,5,10"
                 FontSize="21"
                 Text="Sound library" />
-            <Border
+            <Grid
                 Grid.Row="1"
                 Grid.RowSpan="2"
                 Grid.Column="2"
                 Panel.ZIndex="2"
                 Background="{StaticResource SecondaryRegionBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <ListBox
+                    x:Name="lbHitsounds"
                     Margin="15,0,15,15"
-                    ItemsSource="{Binding Project.HitsoundFiles.Values}"
-                    SelectedItem="{Binding Project.SelectedHitsound, Mode=TwoWay}"
+                    ItemsSource="{Binding Project.HitsoundCaches}"
+                    PreviewMouseLeftButtonDown="lbHitsounds_OnPreviewMouseLeftButtonDown"
+                    SelectionChanged="LbHitsounds_OnSelectionChanged"
                     Style="{StaticResource ListBox.Small}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -180,7 +187,14 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </Border>
+                <CheckBox
+                    Grid.Row="1"
+                    Margin="15,0,15,15"
+                    Checked="cbShowUsed_OnCheckChanged"
+                    Content="Show Used"
+                    IsChecked="{Binding Project.EditorSettings.ShowUsedChecked}"
+                    Unchecked="cbShowUsed_OnCheckChanged" />
+            </Grid>
         </Grid>
 
         <Border

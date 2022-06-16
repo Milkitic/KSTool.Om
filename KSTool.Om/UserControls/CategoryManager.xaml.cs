@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using KSTool.Om.Core.Models;
+using KSTool.Om.Windows;
 
 namespace KSTool.Om.UserControls;
 
@@ -79,6 +80,82 @@ public partial class CategoryManager : UserControl
                 Project.SelectedCategory.Name = tbCategoryName.Text;
                 tbCategoryName.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
             }
+        }
+    }
+
+    private void btnAddCategorySound_OnClick(object sender, RoutedEventArgs e)
+    {
+        AddSoundToCategory();
+    }
+
+    internal void AddSoundToCategory()
+    {
+        /*SelectedHitsound: { } cache,*/
+        if (Project is not { SelectedCategory: { } category }) return;
+        var mainWindow = (MainWindow)App.Current.MainWindow!;
+        foreach (var selectedItem in mainWindow.lbHitsounds.SelectedItems)
+        {
+            if (selectedItem is HitsoundCache hitsoundCache)
+            {
+                category.SoundFiles.Add(hitsoundCache.SoundFile);
+            }
+        }
+
+        if (!Project.EditorSettings.ShowUsedChecked)
+        {
+            Project.ComputeUnusedHitsounds();
+            Project.RefreshShowHitsoundType();
+        }
+    }
+
+    private void btnDelCategorySound_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (Project is not { SelectedCategory: { SelectedSound: { } soundFile } category }) return;
+
+        var selectedCategory = Project.SelectedCategory;
+        var soundFiles = selectedCategory.SoundFiles;
+
+        var index = soundFiles.IndexOf(soundFile);
+        category.SoundFiles.Remove(soundFile);
+
+        if (index == 0)
+        {
+            selectedCategory.SelectedSound = soundFiles.FirstOrDefault();
+        }
+        else if (index >= soundFiles.Count)
+        {
+            selectedCategory.SelectedSound = soundFiles.LastOrDefault();
+        }
+        else
+        {
+            selectedCategory.SelectedSound = soundFiles[index];
+        }
+
+        Reselect();
+    }
+
+    private void Reselect()
+    {
+        if (Project.EditorSettings.ShowUsedChecked) return;
+        var mainWindow = (MainWindow)App.Current.MainWindow!;
+        var index = mainWindow.lbHitsounds.SelectedIndex;
+
+        Project.ComputeUnusedHitsounds();
+        Project.RefreshShowHitsoundType();
+
+        if (index == 0)
+        {
+            var item = mainWindow.lbHitsounds.Items.Cast<object>().FirstOrDefault();
+            if (item != null) mainWindow.lbHitsounds.ScrollIntoView(item);
+        }
+        else if (index >= Project.UnusedHitsoundFiles.Count)
+        {
+            var item = mainWindow.lbHitsounds.Items.Cast<object>().LastOrDefault();
+            if (item != null) mainWindow.lbHitsounds.ScrollIntoView(item);
+        }
+        else
+        {
+            mainWindow.lbHitsounds.ScrollIntoView(Project.UnusedHitsoundFiles[index]);
         }
     }
 }

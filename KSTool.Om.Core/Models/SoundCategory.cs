@@ -9,6 +9,7 @@ public class SoundCategory : ViewModelBase
 
     private string _name = "New Category";
     private int _defaultVolume = 100;
+    private SoundFile? _selectedSound;
 
     public string Name
     {
@@ -31,4 +32,11 @@ public class SoundCategory : ViewModelBase
 
     [YamlIgnore]
     public ObservableCollection<SoundFile> SoundFiles { get; set; } = new();
+
+    [YamlIgnore]
+    public SoundFile? SelectedSound
+    {
+        get => _selectedSound;
+        set => this.RaiseAndSetIfChanged(ref _selectedSound, value);
+    }
 }

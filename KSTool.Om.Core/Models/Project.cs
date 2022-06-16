@@ -13,6 +13,8 @@ public class Project : ViewModelBase
 {
     private SoundCategory? _selectedCategory;
     private HitsoundCache? _selectedHitsound;
+    private EditorSettings _editorSettings;
+    private ObservableCollection<HitsoundCache> _unusedHitsoundFiles = new();
     private const string CurrentProjectVersion = "2.0";
 
     #region Configurable
@@ -35,6 +37,14 @@ public class Project : ViewModelBase
     [YamlMember]
     public ObservableCollection<ProjectDifficulty> Difficulties { get; private set; } = new();
 
+
+    [YamlMember]
+    public EditorSettings EditorSettings
+    {
+        get => _editorSettings ??= new EditorSettings();
+        set => _editorSettings = value;
+    }
+
     #endregion
 
     [YamlIgnore]
@@ -44,10 +54,14 @@ public class Project : ViewModelBase
     public Dictionary<string, HitsoundCache> HitsoundFiles { get; } = new();
 
     [YamlIgnore]
-    public HitsoundCache? SelectedHitsound
+    public ICollection<HitsoundCache> HitsoundCaches =>
+        EditorSettings.ShowUsedChecked ? HitsoundFiles.Values : UnusedHitsoundFiles;
+
+    [YamlIgnore]
+    public ObservableCollection<HitsoundCache> UnusedHitsoundFiles
     {
-        get => _selectedHitsound;
-        set => this.RaiseAndSetIfChanged(ref _selectedHitsound, value);
+        get => _unusedHitsoundFiles;
+        set => this.RaiseAndSetIfChanged(ref _unusedHitsoundFiles, value);
     }
 
     [YamlIgnore]
@@ -68,6 +82,7 @@ public class Project : ViewModelBase
 
     public void Save(string path)
     {
+        EditorSettings.LastSelectedDifficulty = CurrentDifficulty?.DifficultyName;
         foreach (var soundCategoryVm in SoundCategories)
         {
             soundCategoryVm.SoundFileNames.Clear();
@@ -114,6 +129,22 @@ public class Project : ViewModelBase
     {
         soundCategory.SoundFileNames.Add(soundFile.GetRelativePath(OsuBeatmapDir));
         soundCategory.SoundFiles.Add(soundFile);
+    }
+
+    public void RefreshShowHitsoundType()
+    {
+        OnPropertyChanged(nameof(HitsoundCaches));
+    }
+
+    public void ComputeUnusedHitsounds()
+    {
+        var all = SoundCategories
+            .SelectMany(k => k.SoundFiles.Select(o => o.GetRelativePath(OsuBeatmapDir)))
+            .ToHashSet();
+
+        UnusedHitsoundFiles =
+            new ObservableCollection<HitsoundCache>(HitsoundCaches.Where(k =>
+                !all.Contains(k.SoundFile.GetRelativePath(OsuBeatmapDir))));
     }
 
     public async Task ExportCurrentDifficultyAsync()
@@ -332,7 +363,11 @@ public class Project : ViewModelBase
             }
         }
 
-        project.CurrentDifficulty = project.Difficulties.FirstOrDefault();
+        project.ComputeUnusedHitsounds();
+
+        project.CurrentDifficulty =
+            project.Difficulties.FirstOrDefault(k => k.DifficultyName == project.EditorSettings.LastSelectedDifficulty) ??
+            project.Difficulties.FirstOrDefault();
     }
 
     private HashSet<TimingRule> GetCurrentTimingRules(List<TimingRule> flattenRules, int timing)
@@ -402,4 +437,17 @@ public class Project : ViewModelBase
         rawHitObject.SampleVolume = (byte)volume;
         unhandledHitsoundFileList.Remove(hitsoundCache);
     }
+}
+
+public class EditorSettings : ViewModelBase
+{
+    private bool _showUsedChecked;
+
+    public bool ShowUsedChecked
+    {
+        get => _showUsedChecked;
+        set => this.RaiseAndSetIfChanged(ref _showUsedChecked, value);
+    }
+
+    public string? LastSelectedDifficulty { get; set; }
 }

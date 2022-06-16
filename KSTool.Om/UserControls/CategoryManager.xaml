@@ -12,6 +12,30 @@
     d:DesignWidth="800"
     TextOptions.TextFormattingMode="Display"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style
+            x:Key="ToolButtonDanger"
+            BasedOn="{StaticResource ButtonDanger}"
+            TargetType="Button">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+        </Style>
+        <Style
+            x:Key="ToolButton"
+            BasedOn="{StaticResource {x:Type Button}}"
+            TargetType="Button">
+            <Setter Property="Width" Value="22" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+        </Style>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -33,34 +57,22 @@
             <StackPanel
                 Margin="0,0,10,2"
                 HorizontalAlignment="Right"
+                DockPanel.Dock="Right"
                 Orientation="Horizontal"
                 TextOptions.TextFormattingMode="Display"
                 TextOptions.TextRenderingMode="Grayscale">
                 <Button
-                    Width="22"
-                    Height="22"
-                    MinHeight="0"
-                    Margin="0,0,3,0"
-                    Padding="0"
-                    VerticalAlignment="Center"
-                    Click="btnAddCategory_OnClick"
-                    Content="&#xE710;"
-                    DockPanel.Dock="Right"
-                    FontFamily="Segoe MDL2 Assets"
-                    FontSize="11" />
-                <Button
                     x:Name="btnDelCategory"
-                    Width="20"
-                    Height="20"
-                    MinHeight="0"
-                    Padding="0"
-                    VerticalAlignment="Center"
+                    Margin="0,0,3,0"
                     Click="btnDelCategory_OnClick"
                     Content="&#xE74D;"
-                    DockPanel.Dock="Right"
-                    FontFamily="Segoe MDL2 Assets"
                     FontSize="13"
-                    Style="{StaticResource ButtonDanger}" />
+                    Style="{StaticResource ToolButtonDanger}" />
+                <Button
+                    Click="btnAddCategory_OnClick"
+                    Content="&#xE710;"
+                    FontSize="11"
+                    Style="{StaticResource ToolButton}" />
             </StackPanel>
         </DockPanel>
 
@@ -119,13 +131,36 @@
                 FontSize="11"
                 Foreground="{StaticResource SecondaryTextBrush}"
                 Text="Volume" />
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="1"
-                Margin="10,0,0,5"
-                FontSize="11"
-                Foreground="{StaticResource SecondaryTextBrush}"
-                Text="Contained Sounds" />
+            <DockPanel Grid.Row="1" Grid.Column="1">
+                <TextBlock
+                    Margin="10,0,0,5"
+                    DockPanel.Dock="Left"
+                    FontSize="11"
+                    Foreground="{StaticResource SecondaryTextBrush}"
+                    Text="Contained Sounds" />
+                <StackPanel
+                    Margin="0,-3,0,0"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Right"
+                    Orientation="Horizontal"
+                    TextOptions.TextFormattingMode="Display"
+                    TextOptions.TextRenderingMode="Grayscale">
+                    <Button
+                        x:Name="btnDelCategorySound"
+                        Margin="0,0,3,0"
+                        Click="btnDelCategorySound_OnClick"
+                        Content="&#xECC9;"
+                        FontSize="13"
+                        Style="{StaticResource ToolButtonDanger}" />
+                    <Button
+                        Click="btnAddCategorySound_OnClick"
+                        Content="&#xECC8;"
+                        DockPanel.Dock="Right"
+                        FontSize="13"
+                        Style="{StaticResource ToolButton}" />
+                </StackPanel>
+            </DockPanel>
+
             <Slider
                 Grid.Row="2"
                 Margin="0,0,0,0"
@@ -143,6 +178,7 @@
                 Margin="10,0,0,0"
                 Background="{StaticResource SecondaryRegionBrush}"
                 ItemsSource="{Binding SelectedCategory.SoundFiles}"
+                SelectedItem="{Binding SelectedCategory.SelectedSound}"
                 Style="{StaticResource ListBox.Small}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
