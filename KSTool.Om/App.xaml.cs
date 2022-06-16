@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using KSTool.Om.Core;
 using KSTool.Om.Windows;
 using Milki.Extensions.MouseKeyHook;
 
@@ -20,6 +21,7 @@ namespace KSTool.Om
 
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
+            _ = AudioManager.Instance.Engine;
             MainWindow = new MainWindow();
             MainWindow.Show();
         }

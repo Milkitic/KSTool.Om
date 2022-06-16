@@ -5,13 +5,11 @@ using Coosu.Beatmap.Sections.Event;
 using Coosu.Beatmap.Sections.HitObject;
 using CsvHelper;
 using CsvHelper.Configuration;
-using Milki.Extensions.MixPlayer.Devices;
-using Milki.Extensions.MixPlayer.NAudioExtensions;
 using YamlDotNet.Serialization;
 
 namespace KSTool.Om.Core.Models;
 
-public class Project : ViewModelBase, IDisposable
+public class Project : ViewModelBase
 {
     private SoundCategory? _selectedCategory;
     private HitsoundCache? _selectedHitsound;
@@ -54,9 +52,6 @@ public class Project : ViewModelBase, IDisposable
 
     [YamlIgnore]
     public string? ProjectPath { get; set; }
-
-    [YamlIgnore]
-    public AudioPlaybackEngine? Engine { get; set; }
 
     [YamlIgnore]
     public SoundCategory? SelectedCategory
@@ -247,8 +242,6 @@ public class Project : ViewModelBase, IDisposable
             project.LoadTemplateFile(project.TemplateCsvFile);
         }
 
-        project.Engine = new AudioPlaybackEngine(DeviceDescription.WasapiDefault);
-
         var files = IOUtils.EnumerateFiles(project.OsuBeatmapDir, ".wav", ".mp3", ".ogg", ".osu");
         var ghostReferences = new Dictionary<string, LocalOsuFile>();
 
@@ -284,7 +277,7 @@ public class Project : ViewModelBase, IDisposable
             }
             else // Hitsound cache
             {
-                var hitsoundCache = await HitsoundCache.CreateAsync(project.Engine.WaveFormat,
+                var hitsoundCache = await HitsoundCache.CreateAsync(AudioManager.Instance.Engine.WaveFormat,
                     fileInfo.FullName);
                 project.HitsoundFiles.Add(hitsoundCache.SoundFile.GetRelativePath(project.OsuBeatmapDir),
                     hitsoundCache);
@@ -408,10 +401,5 @@ public class Project : ViewModelBase, IDisposable
         rawHitObject.FileName = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
         rawHitObject.SampleVolume = (byte)volume;
         unhandledHitsoundFileList.Remove(hitsoundCache);
-    }
-
-    public void Dispose()
-    {
-        Engine?.Dispose();
     }
 }

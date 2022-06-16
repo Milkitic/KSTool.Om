@@ -139,9 +139,9 @@ public partial class MainWindow : Window
             var ofd = new CommonSaveFileDialog
             {
                 DefaultFileName = _viewModel.Project.ProjectName,
-                DefaultExtension = ".ksproj"
+                DefaultExtension = "ksproj"
             };
-            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", ".ksproj"));
+            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", "ksproj"));
 
             if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
             {
@@ -210,10 +210,10 @@ public partial class MainWindow : Window
 
             var ofd = new CommonOpenFileDialog
             {
-                DefaultExtension = ".ksproj"
+                DefaultExtension = "ksproj"
             };
 
-            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", ".ksproj"));
+            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", "ksproj"));
 
             if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
             {
@@ -246,7 +246,6 @@ public partial class MainWindow : Window
     {
         if (!PreCloseProject()) return false;
 
-        _viewModel.Project?.Dispose();
         _viewModel.Project = null;
         // ...
 
