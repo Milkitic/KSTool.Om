@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,7 +10,7 @@ namespace KSTool.Om.UserControls;
 public class AnimatedScrollViewer : ScrollViewer
 {
     /// <summary>
-    /// ¹ö¶¯·½Ïò
+    /// æ»šåŠ¨æ–¹å‘
     /// </summary>
     public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
         "Orientation",
@@ -19,7 +19,7 @@ public class AnimatedScrollViewer : ScrollViewer
         new PropertyMetadata(Orientation.Vertical));
 
     /// <summary>
-    /// ÊÇ·ñÏìÓ¦Êó±ê¹öÂÖ²Ù×÷
+    /// æ˜¯å¦å“åº”é¼ æ ‡æ»šè½®æ“ä½œ
     /// </summary>
     public static readonly DependencyProperty CanMouseWheelProperty = DependencyProperty.Register(
         "CanMouseWheel",
@@ -28,7 +28,7 @@ public class AnimatedScrollViewer : ScrollViewer
         new PropertyMetadata(true));
 
     /// <summary>
-    /// ÊÇ·ñÖ§³ÖÆ½»¬¹ö¶¯
+    /// æ˜¯å¦æ”¯æŒæƒ¯æ€§
     /// </summary>
     public static readonly DependencyProperty IsSmoothScrollingEnabledProperty =
         DependencyProperty.RegisterAttached(
@@ -36,27 +36,8 @@ public class AnimatedScrollViewer : ScrollViewer
             typeof(bool),
             typeof(AnimatedScrollViewer),
             new PropertyMetadata(true));
-
     /// <summary>
-    /// ´¹Ö±¹ö¶¯¾àÀë
-    /// </summary>
-    public static readonly DependencyProperty VerticalScrollingDistanceProperty = DependencyProperty.Register(
-        "VerticalScrollingDistance",
-        typeof(double),
-        typeof(AnimatedScrollViewer),
-        new PropertyMetadata(120d));
-
-    /// <summary>
-    /// Ë®Æ½¹ö¶¯¾àÀë
-    /// </summary>
-    public static readonly DependencyProperty HorizontalScrollingDistanceProperty = DependencyProperty.Register(
-        "HorizontalScrollingDistance",
-        typeof(double),
-        typeof(AnimatedScrollViewer),
-        new PropertyMetadata(120d));
-
-    /// <summary>
-    /// µ±Ç°´¹Ö±¹ö¶¯Æ«ÒÆ
+    /// å½“å‰å‚ç›´æ»šåŠ¨åç§»
     /// </summary>
     internal static readonly DependencyProperty CurrentVerticalOffsetProperty = DependencyProperty.Register(
         "CurrentVerticalOffset",
@@ -73,7 +54,7 @@ public class AnimatedScrollViewer : ScrollViewer
     }
 
     /// <summary>
-    /// µ±Ç°Ë®Æ½¹ö¶¯Æ«ÒÆ
+    /// å½“å‰æ°´å¹³æ»šåŠ¨åç§»
     /// </summary>
     internal static readonly DependencyProperty CurrentHorizontalOffsetProperty = DependencyProperty.Register(
         "CurrentHorizontalOffset",
@@ -91,8 +72,8 @@ public class AnimatedScrollViewer : ScrollViewer
 
     private double _totalVerticalOffset;
     private double _totalHorizontalOffset;
-    private readonly List<Action> _verticalDictionary = new();
-    private readonly List<Action> _horizontalDictionary = new();
+    private readonly OrderedDictionary _verticalDictionary = new();
+    private readonly OrderedDictionary _horizontalDictionary = new();
 
     private readonly CubicEase _scrollEasing = new() { EasingMode = EasingMode.EaseOut };
 
@@ -103,7 +84,7 @@ public class AnimatedScrollViewer : ScrollViewer
     }
 
     /// <summary>
-    /// ¹ö¶¯·½Ïò
+    /// æ»šåŠ¨æ–¹å‘
     /// </summary>
     public Orientation Orientation
     {
@@ -112,7 +93,7 @@ public class AnimatedScrollViewer : ScrollViewer
     }
 
     /// <summary>
-    /// ÊÇ·ñÏìÓ¦Êó±ê¹öÂÖ²Ù×÷
+    /// æ˜¯å¦å“åº”é¼ æ ‡æ»šè½®æ“ä½œ
     /// </summary>
     public bool CanMouseWheel
     {
@@ -121,7 +102,7 @@ public class AnimatedScrollViewer : ScrollViewer
     }
 
     /// <summary>
-    /// ÊÇ·ñÖ§³Ö¹ßĞÔ
+    /// æ˜¯å¦æ”¯æŒæƒ¯æ€§
     /// </summary>
     public bool IsSmoothScrollingEnabled
     {
@@ -130,25 +111,7 @@ public class AnimatedScrollViewer : ScrollViewer
     }
 
     /// <summary>
-    /// ´¹Ö±¹ö¶¯¾àÀë
-    /// </summary>
-    public double VerticalScrollingDistance
-    {
-        get => (double)GetValue(VerticalScrollingDistanceProperty);
-        set => SetValue(VerticalScrollingDistanceProperty, value);
-    }
-
-    /// <summary>
-    /// Ë®Æ½¹ö¶¯¾àÀë
-    /// </summary>
-    public double HorizontalScrollingDistance
-    {
-        get => (double)GetValue(HorizontalScrollingDistanceProperty);
-        set => SetValue(HorizontalScrollingDistanceProperty, value);
-    }
-
-    /// <summary>
-    /// µ±Ç°´¹Ö±¹ö¶¯Æ«ÒÆ
+    /// å½“å‰å‚ç›´æ»šåŠ¨åç§»
     /// </summary>
     internal double CurrentVerticalOffset
     {
@@ -157,7 +120,7 @@ public class AnimatedScrollViewer : ScrollViewer
     }
 
     /// <summary>
-    /// µ±Ç°Ë®Æ½¹ö¶¯Æ«ÒÆ
+    /// å½“å‰æ°´å¹³æ»šåŠ¨åç§»
     /// </summary>
     internal double CurrentHorizontalOffset
     {
@@ -180,7 +143,7 @@ public class AnimatedScrollViewer : ScrollViewer
             _verticalDictionary[_verticalDictionary.Count - 1] = null;
         }
 
-        _verticalDictionary.Add(() =>
+        _verticalDictionary.Add(verticalAnimation, new Action(() =>
         {
             ScrollToVerticalOffset(offset);
             CurrentVerticalOffset = offset;
@@ -189,7 +152,7 @@ public class AnimatedScrollViewer : ScrollViewer
             BeginAnimation(CurrentVerticalOffsetProperty, null, HandoffBehavior.SnapshotAndReplace);
             ScrollChanged += Vertical_ScrollChanged;
             onCompleted?.Invoke();
-        });
+        }));
 
         var thisIndex = _verticalDictionary.Count - 1;
         verticalAnimation.Completed += (_, _) =>
@@ -217,7 +180,7 @@ public class AnimatedScrollViewer : ScrollViewer
             _horizontalDictionary[_horizontalDictionary.Count - 1] = null;
         }
 
-        _horizontalDictionary.Add(() =>
+        _horizontalDictionary.Add(horizontalAnimation, new Action(() =>
         {
             ScrollToHorizontalOffset(offset);
             CurrentHorizontalOffset = offset;
@@ -226,7 +189,7 @@ public class AnimatedScrollViewer : ScrollViewer
             BeginAnimation(CurrentHorizontalOffsetProperty, null, HandoffBehavior.SnapshotAndReplace);
             ScrollChanged += Horizontal_ScrollChanged;
             onCompleted?.Invoke();
-        });
+        }));
 
         var thisIndex = _horizontalDictionary.Count - 1;
         horizontalAnimation.Completed += (_, _) =>
@@ -247,14 +210,12 @@ public class AnimatedScrollViewer : ScrollViewer
             e.Handled = true;
             if (Orientation == Orientation.Vertical)
             {
-                var delta = Math.Sign(e.Delta) * VerticalScrollingDistance;
-                _totalVerticalOffset = Math.Min(Math.Max(0, _totalVerticalOffset - delta), ScrollableHeight);
+                _totalVerticalOffset = Math.Min(Math.Max(0, _totalVerticalOffset - e.Delta), ScrollableHeight);
                 ScrollToVerticalOffsetWithAnimation(_totalVerticalOffset);
             }
             else
             {
-                var delta = Math.Sign(e.Delta) * HorizontalScrollingDistance;
-                _totalHorizontalOffset = Math.Min(Math.Max(0, _totalHorizontalOffset - delta), ScrollableWidth);
+                _totalHorizontalOffset = Math.Min(Math.Max(0, _totalHorizontalOffset - e.Delta), ScrollableWidth);
                 ScrollToHorizontalOffsetWithAnimation(_totalHorizontalOffset);
             }
         }
