@@ -15,6 +15,7 @@ public class Project : ViewModelBase
     private HitsoundCache? _selectedHitsound;
     private EditorSettings _editorSettings;
     private ObservableCollection<HitsoundCache> _unusedHitsoundFiles = new();
+    private ProjectDifficulty? _currentDifficulty;
     private const string CurrentProjectVersion = "2.0";
 
     #region Configurable
@@ -75,7 +76,11 @@ public class Project : ViewModelBase
     }
 
     [YamlIgnore]
-    public ProjectDifficulty? CurrentDifficulty { get; set; }
+    public ProjectDifficulty? CurrentDifficulty
+    {
+        get => _currentDifficulty;
+        set => this.RaiseAndSetIfChanged(ref _currentDifficulty, value);
+    }
 
     [YamlIgnore]
     public bool IsModified { get; set; }

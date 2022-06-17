@@ -22,6 +22,17 @@
             <converters:Volume2StringConverter x:Key="Volume2StringConverter" />
 
             <Style
+                x:Key="ToolButtonPrimary"
+                BasedOn="{StaticResource ButtonPrimary}"
+                TargetType="Button">
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            </Style>
+            <Style
                 x:Key="ToolButtonDanger"
                 BasedOn="{StaticResource ButtonDanger}"
                 TargetType="Button">

@@ -110,6 +110,7 @@ public partial class MainWindow : Window
     private void MainWindow_OnClosed(object? sender, EventArgs e)
     {
         Application.Current.Shutdown();
+        Environment.Exit(0);
     }
 
     private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
@@ -285,14 +286,19 @@ public partial class MainWindow : Window
 
     private void btnDelRule_OnClick(object sender, RoutedEventArgs e)
     {
+        var button = (Button)sender;
+        var timingRule = (TimingRule)button.Tag;
+        if (_viewModel.Project?.CurrentDifficulty == null) return;
+
+        _viewModel.Project.CurrentDifficulty.FlattenTimingRules.Remove(timingRule);
     }
 
-    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+    private void btnEditRule_OnClick(object sender, RoutedEventArgs e)
     {
         var button = (Button)sender;
         var timingRule = (TimingRule)button.Tag;
-
         if (_viewModel.Project?.CurrentDifficulty == null) return;
+
         var addWin = new AddOrEditRuleWindow(_viewModel.Project, _viewModel.Project.CurrentDifficulty, timingRule)
         {
             Owner = this

@@ -151,13 +151,6 @@
                             TextOptions.TextFormattingMode="Display"
                             TextOptions.TextRenderingMode="Grayscale">
                             <Button
-                                x:Name="btnDelCategorySound"
-                                Margin="0,0,3,0"
-                                Click="btnDelRule_OnClick"
-                                Content="&#xE74D;"
-                                FontSize="13"
-                                Style="{StaticResource ToolButtonDanger}" />
-                            <Button
                                 HorizontalAlignment="Center"
                                 Click="btnAddRule_OnClick"
                                 Content="&#xE710;"
@@ -177,7 +170,7 @@
                         Style="{StaticResource DataGrid.Small}">
                         <DataGrid.Columns>
                             <DataGridTextColumn
-                                Width="130"
+                                Width="125"
                                 Binding="{Binding Category.Name}"
                                 Header="Category Name" />
                             <DataGridTextColumn Binding="{Binding TimingRange, Converter={StaticResource TimingRange2StringConverter}}" Header="Time Range" />
@@ -185,12 +178,21 @@
                             <DataGridTemplateColumn Header="Operation">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button
-                                            Click="ButtonBase_OnClick"
-                                            Content="&#xE70F;"
-                                            FontFamily="Segoe MDL2 Assets"
-                                            Style="{StaticResource ButtonPrimary.Small}"
-                                            Tag="{Binding}" />
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <Button
+                                                Margin="0,0,5,0"
+                                                Click="btnEditRule_OnClick"
+                                                Content="&#xE70F;"
+                                                Style="{StaticResource ToolButtonPrimary}"
+                                                Tag="{Binding}" />
+                                            <Button
+                                                x:Name="btnDelCategorySound"
+                                                Click="btnDelRule_OnClick"
+                                                Content="&#xE74D;"
+                                                FontSize="13"
+                                                Style="{StaticResource ToolButtonDanger}"
+                                                Tag="{Binding}" />
+                                        </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
