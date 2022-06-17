@@ -354,4 +354,35 @@ public partial class MainWindow : Window
             _viewModel.Project.TemplateCsvFile = file;
         }
     }
+
+    private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        var result = await Updater.CheckUpdateAsync();
+
+        if (result == true)
+        {
+            Growl.Ask($"Found new version: {Updater.NewRelease!.NewVerString}. " +
+                      $"Click yes to open the release page.",
+                dialogResult =>
+                {
+                    if (dialogResult)
+                    {
+                        Updater.OpenLastReleasePage();
+                    }
+
+                    return dialogResult;
+                });
+        }
+    }
+
+    private void miOpenWebPage_OnClick(object sender, RoutedEventArgs e)
+    {
+        var frameworkElement = (FrameworkElement)sender;
+        var tag = (string?)frameworkElement.Tag;
+
+        if (tag != null)
+        {
+            Process.Start(new ProcessStartInfo(tag) { UseShellExecute = true });
+        }
+    }
 }

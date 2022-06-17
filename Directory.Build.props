@@ -1,0 +1,12 @@
+<Project>
+    <PropertyGroup>
+        <LangVersion>10.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+        <Product>KSTool - Tool for osu!mania keysound </Product>
+        <Authors>Milki</Authors>
+        <Company>Milki</Company>
+        <Copyright>Copyright © Milki 2022</Copyright>
+    </PropertyGroup>
+</Project>
