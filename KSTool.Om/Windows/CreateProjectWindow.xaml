@@ -9,6 +9,7 @@
     Width="650"
     Height="400"
     Background="{StaticResource RegionBrush}"
+    FontFamily="Arial"
     FontSize="13"
     ResizeMode="NoResize"
     TextBlock.Foreground="{StaticResource PrimaryTextBrush}"

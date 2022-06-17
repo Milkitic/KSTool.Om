@@ -305,4 +305,53 @@ public partial class MainWindow : Window
         };
         addWin.ShowDialog();
     }
+
+    private async void btnExport_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.Project == null) return;
+        try
+        {
+            if (_viewModel.Project.Templates.Count == 0)
+            {
+                if (_viewModel.Project.TemplateCsvFile == null)
+                    throw new Exception("You haven't selected any template files!");
+                var i = _viewModel.Project.LoadTemplateFile(_viewModel.Project.TemplateCsvFile);
+                Growl.Info($"Loaded {i} records in template file.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Growl.Error("Load template error: " + ex.Message);
+            return;
+        }
+
+        try
+        {
+
+            var path = await _viewModel.Project.ExportCurrentDifficultyAsync();
+            Growl.Success("Export keysound to " + path);
+        }
+        catch (Exception ex)
+        {
+            Growl.Error("Export error: " + ex.Message);
+        }
+    }
+
+    private void btnBrowseTemplate_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.Project == null) return;
+        var ofd = new CommonOpenFileDialog
+        {
+            DefaultExtension = "csv",
+            Multiselect = false
+        };
+
+        ofd.Filters.Add(new CommonFileDialogFilter("CSV file", "csv"));
+
+        if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            var file = ofd.FileName;
+            _viewModel.Project.TemplateCsvFile = file;
+        }
+    }
 }

@@ -12,10 +12,10 @@ namespace KSTool.Om.Core.Models;
 public class Project : ViewModelBase
 {
     private SoundCategory? _selectedCategory;
-    private HitsoundCache? _selectedHitsound;
-    private EditorSettings _editorSettings;
+    private EditorSettings? _editorSettings;
     private ObservableCollection<HitsoundCache> _unusedHitsoundFiles = new();
     private ProjectDifficulty? _currentDifficulty;
+    private string? _templateCsvFile;
     private const string CurrentProjectVersion = "2.0";
 
     #region Configurable
@@ -24,7 +24,17 @@ public class Project : ViewModelBase
     public string? KsProjectVersion { get; set; }
 
     [YamlMember]
-    public string? TemplateCsvFile { get; set; }
+    public string? TemplateCsvFile
+    {
+        get => _templateCsvFile;
+        set
+        {
+            if (value == _templateCsvFile) return;
+            _templateCsvFile = value;
+            Templates.Clear();
+            OnPropertyChanged();
+        }
+    }
 
     [YamlMember]
     public string ProjectName { get; set; } = "New Project";
@@ -126,14 +136,17 @@ public class Project : ViewModelBase
         File.WriteAllText(path, str);
     }
 
-    public void LoadTemplateFile(string templateFile)
+    public int LoadTemplateFile(string templateFile)
     {
+        Templates.Clear();
+
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
             HasHeaderRecord = false,
         };
         using var reader = new StreamReader(templateFile);
         using var csv = new CsvReader(reader, config);
+        int i = 0;
         foreach (var templateObject in csv.GetRecords<TemplateObject>())
         {
             if (!Templates.TryGetValue(templateObject.Timing, out var hashSet))
@@ -143,9 +156,12 @@ public class Project : ViewModelBase
             }
 
             hashSet.Add(templateObject.RelativePath);
+            i++;
         }
 
+        if (Templates.Count == 0) throw new Exception("Not a valid templateFile");
         TemplateCsvFile = templateFile;
+        return i;
     }
 
     public void AddSoundFileIntoSoundCategory(HitsoundCache hitsoundCache, SoundCategory soundCategory)
@@ -170,14 +186,15 @@ public class Project : ViewModelBase
                 !all.Contains(k.SoundFile.GetRelativePath(OsuBeatmapDir))));
     }
 
-    public async Task ExportCurrentDifficultyAsync()
+    public async Task<string> ExportCurrentDifficultyAsync()
     {
         if (CurrentDifficulty == null) throw new Exception("You haven't selected any difficulties!");
         if (string.IsNullOrWhiteSpace(TemplateCsvFile)) throw new Exception("You haven't selected any template files!");
+        if (Templates.Count == 0) throw new Exception("The template file is not valid!");
         var osuFile = CurrentDifficulty.OsuFile;
         if (osuFile == null) throw new Exception("Osu file is lost");
 
-        await Task.Run(() =>
+        return await Task.Run(() =>
         {
             // Clear current sounds
             osuFile.Events.Samples.Clear();
@@ -255,8 +272,18 @@ public class Project : ViewModelBase
                 }
             }
 
+            var metadataVersion = osuFile.Metadata.Version;
             osuFile.Metadata.Version += " (KS)";
-            osuFile.WriteOsuFile(Path.Combine(OsuBeatmapDir, osuFile.GetPath(osuFile.Metadata.Version)));
+            try
+            {
+                var combine = Path.Combine(OsuBeatmapDir, osuFile.GetPath(osuFile.Metadata.Version));
+                osuFile.WriteOsuFile(combine);
+                return combine;
+            }
+            finally
+            {
+                osuFile.Metadata.Version = metadataVersion;
+            }
         });
     }
 
@@ -289,10 +316,10 @@ public class Project : ViewModelBase
     {
         project.KsProjectVersion = CurrentProjectVersion;
 
-        if (!string.IsNullOrWhiteSpace(project.TemplateCsvFile))
-        {
-            project.LoadTemplateFile(project.TemplateCsvFile);
-        }
+        //if (!string.IsNullOrWhiteSpace(project.TemplateCsvFile))
+        //{
+        //    project.LoadTemplateFile(project.TemplateCsvFile);
+        //}
 
         var files = IOUtils.EnumerateFiles(project.OsuBeatmapDir, ".wav", ".mp3", ".ogg", ".osu");
         var ghostReferences = new Dictionary<string, LocalOsuFile>();

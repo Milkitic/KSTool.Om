@@ -9,13 +9,14 @@
     xmlns:models="clr-namespace:KSTool.Om.Core.Models;assembly=KSTool.Om.Core"
     xmlns:userControls="clr-namespace:KSTool.Om.UserControls"
     Title="{Binding Project, Converter={StaticResource TitleConverter}}"
-    Width="1200"
+    Width="1300"
     Height="900"
     d:DataContext="{d:DesignInstance local:MainWindowViewModel,
                                      IsDesignTimeCreatable=False}"
     Background="{StaticResource SecondaryRegionBrush}"
     Closed="MainWindow_OnClosed"
     Closing="MainWindow_OnClosing"
+    FontFamily="Arial"
     FontSize="13"
     TextBlock.Foreground="{StaticResource PrimaryTextBrush}"
     WindowStartupLocation="CenterScreen"
@@ -100,30 +101,59 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <StackPanel
-                    Margin="15,5,5,5"
-                    HorizontalAlignment="Left"
-                    Orientation="Vertical">
-                    <TextBlock
-                        Margin="0,0,0,5"
-                        FontSize="14"
-                        Text="Selected Difficulty" />
-                    <ComboBox
-                        Width="250"
-                        Height="26"
-                        MinHeight="0"
-                        Margin="0,0,0,5"
-                        Padding="8,0"
-                        FontSize="12"
-                        ItemsSource="{Binding Project.Difficulties}"
-                        SelectedItem="{Binding Project.CurrentDifficulty}"
-                        SelectionChanged="Selector_OnSelectionChanged">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="models:ProjectDifficulty">
-                                <TextBlock Text="{Binding DifficultyName}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel
+                        Margin="15,5,5,5"
+                        HorizontalAlignment="Left"
+                        Orientation="Vertical">
+                        <TextBlock
+                            Margin="0,0,0,5"
+                            FontSize="14"
+                            Text="Selected Difficulty" />
+                        <ComboBox
+                            Width="160"
+                            Height="26"
+                            MinHeight="0"
+                            Margin="0,0,0,5"
+                            Padding="8,0"
+                            FontSize="12"
+                            ItemsSource="{Binding Project.Difficulties}"
+                            SelectedItem="{Binding Project.CurrentDifficulty}"
+                            SelectionChanged="Selector_OnSelectionChanged">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate DataType="models:ProjectDifficulty">
+                                    <TextBlock Text="{Binding DifficultyName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel
+                        Margin="15,5,5,5"
+                        HorizontalAlignment="Left"
+                        Orientation="Vertical">
+                        <TextBlock
+                            Margin="0,0,0,5"
+                            FontSize="14"
+                            Text="Template File" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox
+                                Width="333"
+                                Height="26"
+                                MinHeight="0"
+                                Margin="0,0,0,5"
+                                Padding="8,0"
+                                FontSize="12"
+                                IsReadOnly="True"
+                                Text="{Binding Project.TemplateCsvFile, Mode=OneWay}" />
+                            <Button
+                                Width="26"
+                                Height="26"
+                                Margin="1,-3,0,3"
+                                Content="..." Click="btnBrowseTemplate_OnClick"
+                                FontFamily="Arial"
+                                Style="{StaticResource ToolButton}" />
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
                 <Grid Grid.Row="1" Margin="15,0,20,15">
                     <Grid.RowDefinitions>
@@ -203,6 +233,7 @@
                         Height="26"
                         Padding="7,0"
                         HorizontalAlignment="Right"
+                        Click="btnExport_OnClick"
                         Content="Export Keysound!"
                         FontSize="12"
                         Style="{StaticResource ButtonPrimary.Small}" />
