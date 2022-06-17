@@ -20,15 +20,12 @@ public class GeneralTest
         };
 
         createNew.AddSoundFileIntoSoundCategory(
-            createNew.HitsoundFiles.First(k => k.Key == "soft-hitwhistle10.wav").Value.SoundFile,
-            soundCategoryVm);
+            createNew.HitsoundFiles.First(k => k.Key == "soft-hitwhistle10.wav").Value,
+            soundCategoryVm
+        );
 
         soundCategoryVm.SoundFileNames.Add("NOTEXIST.wav");
-        soundCategoryVm.SoundFiles.Add(new SoundFile
-        {
-            FilePath = "NOTEXIST.wav",
-            IsFileLost = true
-        });
+        soundCategoryVm.Hitsounds.Add(HitsoundCache.CreateLost("NOTEXIST.wav"));
         createNew.TemplateCsvFile = "Files/template.csv";
         createNew.SoundCategories.Add(soundCategoryVm);
 
@@ -36,7 +33,7 @@ public class GeneralTest
         diff.GroupTimingRules.Add(new GroupTimingRule
         {
             PreferredCategory = "Asdf",
-            RangeInfos = new ObservableCollection<RangeInfo>
+            RangeInfos = new List<RangeInfo>
             {
                 new() { TimingRange = new RangeValue<int>(1234, 5678) },
                 new() { TimingRange = new RangeValue<int>(6000, 8000) }
@@ -46,7 +43,7 @@ public class GeneralTest
         diff.GroupTimingRules.Add(new GroupTimingRule
         {
             PreferredCategory = "Kicks",
-            RangeInfos = new ObservableCollection<RangeInfo>
+            RangeInfos = new List<RangeInfo>
             {
                 new() { TimingRange = new RangeValue<int>(0, 23456) },
                 new() { TimingRange = new RangeValue<int>(25000, 1130000) }

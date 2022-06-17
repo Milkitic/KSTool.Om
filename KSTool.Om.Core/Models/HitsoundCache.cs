@@ -5,12 +5,13 @@ namespace KSTool.Om.Core.Models;
 
 public class HitsoundCache
 {
-    private HitsoundCache(string path, CachedSound? cachedSound)
+    private HitsoundCache(string path, CachedSound? cachedSound, bool isFileLost)
     {
         CachedSound = cachedSound;
         SoundFile = new SoundFile
         {
-            FilePath = path
+            FilePath = path,
+            IsFileLost = isFileLost
         };
     }
 
@@ -20,6 +21,11 @@ public class HitsoundCache
 
     public static async Task<HitsoundCache> CreateAsync(WaveFormat waveFormat, string path)
     {
-        return new HitsoundCache(path, await CachedSoundFactory.GetOrCreateCacheSound(waveFormat, path));
+        return new HitsoundCache(path, await CachedSoundFactory.GetOrCreateCacheSound(waveFormat, path), false);
+    }
+
+    public static HitsoundCache CreateLost(string relativePath)
+    {
+        return new HitsoundCache(relativePath, null, true);
     }
 }

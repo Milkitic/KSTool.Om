@@ -8,7 +8,7 @@ public class GroupTimingRule
     #region Configurable
 
     public string PreferredCategory { get; set; } = "New Category";
-    public ObservableCollection<RangeInfo> RangeInfos { get; set; } = new();
+    public List<RangeInfo> RangeInfos { get; set; } = new();
 
     #endregion
 

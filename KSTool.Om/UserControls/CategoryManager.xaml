@@ -173,16 +173,17 @@
                 Style="{StaticResource ColorPickerSlider}"
                 Value="{Binding SelectedCategory.DefaultVolume, Mode=TwoWay}" />
             <ListBox
+                x:Name="lbCategoryHitsounds"
                 Grid.Row="2"
                 Grid.Column="1"
                 Margin="10,0,0,0"
                 Background="{StaticResource SecondaryRegionBrush}"
-                ItemsSource="{Binding SelectedCategory.SoundFiles}"
+                ItemsSource="{Binding SelectedCategory.Hitsounds}"
                 SelectedItem="{Binding SelectedCategory.SelectedSound}"
                 Style="{StaticResource ListBox.Small}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding CachedRelativePath}" />
+                        <TextBlock Text="{Binding SoundFile.CachedRelativePath}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

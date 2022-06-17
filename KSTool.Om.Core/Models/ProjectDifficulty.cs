@@ -4,14 +4,23 @@ using YamlDotNet.Serialization;
 
 namespace KSTool.Om.Core.Models;
 
-public class ProjectDifficulty
+public class ProjectDifficulty : ViewModelBase
 {
+    private ObservableCollection<TimingRule> _flattenTimingRules = new();
+
     #region Configurable
 
     public string DifficultyName { get; set; } = "Unknown";
-    public ObservableCollection<GroupTimingRule> GroupTimingRules { get; set; } = new();
+    public List<GroupTimingRule> GroupTimingRules { get; set; } = new();
 
     #endregion
+
+    [YamlIgnore]
+    public ObservableCollection<TimingRule> FlattenTimingRules
+    {
+        get => _flattenTimingRules;
+        set => this.RaiseAndSetIfChanged(ref _flattenTimingRules, value);
+    }
 
     [YamlIgnore]
     public bool IsDifficultyLost => OsuFile == null;
@@ -24,4 +33,5 @@ public class ProjectDifficulty
 
     [YamlIgnore]
     public LocalOsuFile? GhostReferenceOsuFile { get; set; }
+
 }

@@ -17,6 +17,7 @@ public partial class CategoryManager : UserControl
     public CategoryManager()
     {
         InitializeComponent();
+        AudioHelper.RegisterAudioPlaying(lbCategoryHitsounds);
     }
 
     private Project Project => _viewModel ??= (Project)DataContext;
@@ -97,7 +98,7 @@ public partial class CategoryManager : UserControl
         {
             if (selectedItem is HitsoundCache hitsoundCache)
             {
-                category.SoundFiles.Add(hitsoundCache.SoundFile);
+                category.Hitsounds.Add(hitsoundCache);
             }
         }
 
@@ -113,10 +114,10 @@ public partial class CategoryManager : UserControl
         if (Project is not { SelectedCategory: { SelectedSound: { } soundFile } category }) return;
 
         var selectedCategory = Project.SelectedCategory;
-        var soundFiles = selectedCategory.SoundFiles;
+        var soundFiles = selectedCategory.Hitsounds;
 
         var index = soundFiles.IndexOf(soundFile);
-        category.SoundFiles.Remove(soundFile);
+        category.Hitsounds.Remove(soundFile);
 
         if (index == 0)
         {

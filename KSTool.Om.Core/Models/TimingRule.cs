@@ -8,7 +8,8 @@ public class TimingRule
         TimingRange = rangeInfo.TimingRange;
         Volume = rangeInfo.Volume;
     }
-
+    
+    public bool IsCategoryLost { get; set; }
     public SoundCategory Category { get; }
     public RangeValue<int> TimingRange { get; }
     public int Volume { get; }

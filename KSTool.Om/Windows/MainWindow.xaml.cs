@@ -54,6 +54,7 @@ public partial class MainWindow : Window
                 await Dispatcher.InvokeAsync(async () => await OpenProjectAsync());
             }
         });
+        AudioHelper.RegisterAudioPlaying(lbHitsounds);
     }
 
     private async void miCreateProject_OnClick(object sender, RoutedEventArgs e)
@@ -261,29 +262,6 @@ public partial class MainWindow : Window
         }
 
         return true;
-    }
-
-    private void lbHitsounds_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (ItemsControl.ContainerFromElement(sender as ListBox, e.OriginalSource as DependencyObject) is ListBoxItem item)
-        {
-            PlaySelected((HitsoundCache)item.DataContext);
-        }
-    }
-
-    private void LbHitsounds_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (e.AddedItems is { Count: > 0 })
-        {
-            PlaySelected((HitsoundCache)e.AddedItems[0]!);
-        }
-    }
-
-    private void PlaySelected(HitsoundCache hitsoundCache)
-    {
-        if (hitsoundCache.CachedSound == null) return;
-
-        AudioManager.Instance.TryPlaySound(hitsoundCache.CachedSound);
     }
 
     private void cbShowUsed_OnCheckChanged(object sender, RoutedEventArgs e)

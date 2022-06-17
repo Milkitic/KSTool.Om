@@ -86,17 +86,35 @@ public class Project : ViewModelBase
         foreach (var soundCategoryVm in SoundCategories)
         {
             soundCategoryVm.SoundFileNames.Clear();
-            foreach (var soundFileVm in soundCategoryVm.SoundFiles)
+            foreach (var hitsoundCache in soundCategoryVm.Hitsounds)
             {
-                if (soundFileVm.IsFileLost)
+                var soundFile = hitsoundCache.SoundFile;
+                if (soundFile.IsFileLost)
                 {
-                    soundCategoryVm.SoundFileNames.Add(soundFileVm.FilePath);
+                    soundCategoryVm.SoundFileNames.Add(soundFile.FilePath);
                 }
                 else
                 {
-                    soundCategoryVm.SoundFileNames.Add(soundFileVm.GetRelativePath(OsuBeatmapDir));
+                    soundCategoryVm.SoundFileNames.Add(soundFile.GetRelativePath(OsuBeatmapDir));
                 }
             }
+        }
+
+        foreach (var projectDifficulty in Difficulties)
+        {
+            var grouped = projectDifficulty.FlattenTimingRules
+                .GroupBy(k => k.Category.Name)
+                .Select(k => new GroupTimingRule()
+                {
+                    PreferredCategory = k.Key,
+                    RangeInfos = k.Select(o => new RangeInfo
+                    {
+                        TimingRange = o.TimingRange,
+                        Volume = o.Volume
+                    }).ToList()
+                })
+                .ToList();
+            projectDifficulty.GroupTimingRules = grouped;
         }
 
         var str = YamlConverter.SerializeSettings(this);
@@ -125,10 +143,10 @@ public class Project : ViewModelBase
         TemplateCsvFile = templateFile;
     }
 
-    public void AddSoundFileIntoSoundCategory(SoundFile soundFile, SoundCategory soundCategory)
+    public void AddSoundFileIntoSoundCategory(HitsoundCache hitsoundCache, SoundCategory soundCategory)
     {
-        soundCategory.SoundFileNames.Add(soundFile.GetRelativePath(OsuBeatmapDir));
-        soundCategory.SoundFiles.Add(soundFile);
+        soundCategory.SoundFileNames.Add(hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir));
+        soundCategory.Hitsounds.Add(hitsoundCache);
     }
 
     public void RefreshShowHitsoundType()
@@ -139,7 +157,7 @@ public class Project : ViewModelBase
     public void ComputeUnusedHitsounds()
     {
         var all = SoundCategories
-            .SelectMany(k => k.SoundFiles.Select(o => o.GetRelativePath(OsuBeatmapDir)))
+            .SelectMany(k => k.Hitsounds.Select(o => o.SoundFile.GetRelativePath(OsuBeatmapDir)))
             .ToHashSet();
 
         UnusedHitsoundFiles =
@@ -167,12 +185,9 @@ public class Project : ViewModelBase
                 rawHitObject.FileName = null;
             }
 
-            var flattenRules = new List<TimingRule>();
-            foreach (var timingGroup in CurrentDifficulty.GroupTimingRules.Where(k => !k.IsCategoryLost))
-            {
-                flattenRules.AddRange(
-                    timingGroup.RangeInfos.Select(range => new TimingRule(timingGroup.Category!, range)));
-            }
+            var flattenRules = CurrentDifficulty.FlattenTimingRules
+                .Where(k => !k.IsCategoryLost)
+                .ToList();
 
             var allObjects = osuFile.HitObjects.HitObjectList
                 .GroupBy(k => k.Offset)
@@ -333,21 +348,18 @@ public class Project : ViewModelBase
             {
                 if (project.HitsoundFiles.TryGetValue(soundFileRelative, out var cache))
                 {
-                    soundCategoryVm.SoundFiles.Add(cache.SoundFile);
+                    soundCategoryVm.Hitsounds.Add(cache);
                 }
                 else
                 {
-                    soundCategoryVm.SoundFiles.Add(new SoundFile
-                    {
-                        FilePath = soundFileRelative,
-                        IsFileLost = true
-                    });
+                    soundCategoryVm.Hitsounds.Add(HitsoundCache.CreateLost(soundFileRelative));
                 }
             }
         }
 
         foreach (var projectDifficulty in project.Difficulties)
         {
+            var flattenRules = new List<TimingRule>();
             foreach (var groupTimingRule in projectDifficulty.GroupTimingRules)
             {
                 var categoryInstance =
@@ -360,7 +372,16 @@ public class Project : ViewModelBase
                 {
                     groupTimingRule.Category = categoryInstance;
                 }
+
+                flattenRules.AddRange(groupTimingRule.RangeInfos
+                    .Select(range => new TimingRule(groupTimingRule.Category!, range)
+                    {
+                        IsCategoryLost = groupTimingRule.IsCategoryLost
+                    })
+                );
             }
+
+            projectDifficulty.FlattenTimingRules = new ObservableCollection<TimingRule>(flattenRules);
         }
 
         project.ComputeUnusedHitsounds();
