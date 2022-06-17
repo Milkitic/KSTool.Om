@@ -14,10 +14,35 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <converters:Int2TimeSpanConverter x:Key="Int2TimeSpanConverter" />
+            <converters:IntMillisecond2TimeSpanConverter x:Key="IntMillisecond2TimeSpanConverter" />
             <converters:IsNullToIsEnabledConverter x:Key="IsNullToIsEnabledConverter" />
             <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
+            <converters:TimingRange2StringConverter x:Key="TimingRange2StringConverter" />
             <converters:TitleConverter x:Key="TitleConverter" />
+            <converters:Volume2StringConverter x:Key="Volume2StringConverter" />
+
+            <Style
+                x:Key="ToolButtonDanger"
+                BasedOn="{StaticResource ButtonDanger}"
+                TargetType="Button">
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            </Style>
+            <Style
+                x:Key="ToolButton"
+                BasedOn="{StaticResource {x:Type Button}}"
+                TargetType="Button">
+                <Setter Property="Width" Value="22" />
+                <Setter Property="Height" Value="22" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

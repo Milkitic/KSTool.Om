@@ -95,33 +95,118 @@
                 Margin="15,15,5,10"
                 FontSize="21"
                 Text="Difficulty Settings" />
-            <StackPanel
-                Grid.Row="1"
-                Grid.Column="1"
-                Margin="15,5,5,5"
-                HorizontalAlignment="Left"
-                Orientation="Vertical">
-                <TextBlock
-                    Margin="0,0,0,5"
-                    FontSize="14"
-                    Text="Selected Difficulty" />
-                <ComboBox
-                    Width="250"
-                    Height="26"
-                    MinHeight="0"
-                    Margin="0,0,0,5"
-                    Padding="8,0"
-                    FontSize="12"
-                    ItemsSource="{Binding Project.Difficulties}"
-                    SelectedItem="{Binding Project.CurrentDifficulty}"
-                    SelectionChanged="Selector_OnSelectionChanged">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate DataType="models:ProjectDifficulty">
-                            <TextBlock Text="{Binding DifficultyName}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
+            <Grid Grid.Row="1" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <StackPanel
+                    Margin="15,5,5,5"
+                    HorizontalAlignment="Left"
+                    Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,0,0,5"
+                        FontSize="14"
+                        Text="Selected Difficulty" />
+                    <ComboBox
+                        Width="250"
+                        Height="26"
+                        MinHeight="0"
+                        Margin="0,0,0,5"
+                        Padding="8,0"
+                        FontSize="12"
+                        ItemsSource="{Binding Project.Difficulties}"
+                        SelectedItem="{Binding Project.CurrentDifficulty}"
+                        SelectionChanged="Selector_OnSelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="models:ProjectDifficulty">
+                                <TextBlock Text="{Binding DifficultyName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <Grid Grid.Row="1" Margin="15,0,20,15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <DockPanel>
+                        <TextBlock
+                            Margin="0,0,0,5"
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Left"
+                            FontSize="14"
+                            Text="Rule Definition" />
+                        <StackPanel
+                            Margin="0,-2,0,2"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            TextOptions.TextFormattingMode="Display"
+                            TextOptions.TextRenderingMode="Grayscale">
+                            <Button
+                                x:Name="btnDelCategorySound"
+                                Margin="0,0,3,0"
+                                Click="btnDelRule_OnClick"
+                                Content="&#xE74D;"
+                                FontSize="13"
+                                Style="{StaticResource ToolButtonDanger}" />
+                            <Button
+                                HorizontalAlignment="Center"
+                                Click="btnAddRule_OnClick"
+                                Content="&#xE710;"
+                                FontSize="13"
+                                Style="{StaticResource ToolButton}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DataGrid
+                        Grid.Row="1"
+                        Margin="0,0,0,10"
+                        AutoGenerateColumns="False"
+                        Background="{StaticResource RegionBrush}"
+                        CanUserAddRows="False"
+                        FontSize="12"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding Project.CurrentDifficulty.FlattenTimingRules}"
+                        Style="{StaticResource DataGrid.Small}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="130"
+                                Binding="{Binding Category.Name}"
+                                Header="Category Name" />
+                            <DataGridTextColumn Binding="{Binding TimingRange, Converter={StaticResource TimingRange2StringConverter}}" Header="Time Range" />
+                            <DataGridTextColumn Binding="{Binding Volume, Converter={StaticResource Volume2StringConverter}}" Header="Volume" />
+                            <DataGridTemplateColumn Header="Operation">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Click="ButtonBase_OnClick"
+                                            Content="&#xE70F;"
+                                            FontFamily="Segoe MDL2 Assets"
+                                            Style="{StaticResource ButtonPrimary.Small}"
+                                            Tag="{Binding}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Button
+                        Grid.Row="2"
+                        Height="26"
+                        Padding="7,0"
+                        HorizontalAlignment="Right"
+                        Content="Export Keysound!"
+                        FontSize="12"
+                        Style="{StaticResource ButtonPrimary.Small}" />
+                </Grid>
+            </Grid>
+
             <GridSplitter
                 Grid.Row="2"
                 Grid.Column="1"

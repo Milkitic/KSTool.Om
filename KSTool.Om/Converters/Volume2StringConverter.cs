@@ -4,11 +4,12 @@ using System.Windows.Data;
 
 namespace KSTool.Om.Converters;
 
-internal class IsNullToIsEnabledConverter : IValueConverter
+internal class Volume2StringConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is not null;
+        if (value is null) return "Inherited";
+        return value;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

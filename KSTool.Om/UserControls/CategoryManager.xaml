@@ -8,34 +8,10 @@
     xmlns:models="clr-namespace:KSTool.Om.Core.Models;assembly=KSTool.Om.Core"
     d:DataContext="{d:DesignInstance models:Project,
                                      IsDesignTimeCreatable=False}"
-    d:DesignHeight="450"
+    d:DesignHeight="450" 
     d:DesignWidth="800"
     TextOptions.TextFormattingMode="Display"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <Style
-            x:Key="ToolButtonDanger"
-            BasedOn="{StaticResource ButtonDanger}"
-            TargetType="Button">
-            <Setter Property="Width" Value="20" />
-            <Setter Property="Height" Value="20" />
-            <Setter Property="MinHeight" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
-        </Style>
-        <Style
-            x:Key="ToolButton"
-            BasedOn="{StaticResource {x:Type Button}}"
-            TargetType="Button">
-            <Setter Property="Width" Value="22" />
-            <Setter Property="Height" Value="22" />
-            <Setter Property="MinHeight" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

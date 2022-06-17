@@ -272,4 +272,31 @@ public partial class MainWindow : Window
             _viewModel.Project.RefreshShowHitsoundType();
         }
     }
+
+    private void btnAddRule_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.Project?.CurrentDifficulty == null) return;
+        var addWin = new AddOrEditRuleWindow(_viewModel.Project, _viewModel.Project.CurrentDifficulty)
+        {
+            Owner = this
+        };
+        addWin.ShowDialog();
+    }
+
+    private void btnDelRule_OnClick(object sender, RoutedEventArgs e)
+    {
+    }
+
+    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        var timingRule = (TimingRule)button.Tag;
+
+        if (_viewModel.Project?.CurrentDifficulty == null) return;
+        var addWin = new AddOrEditRuleWindow(_viewModel.Project, _viewModel.Project.CurrentDifficulty, timingRule)
+        {
+            Owner = this
+        };
+        addWin.ShowDialog();
+    }
 }

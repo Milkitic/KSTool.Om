@@ -227,7 +227,8 @@ public class Project : ViewModelBase
                         currentCategories.FirstOrDefault(k => k.Category.SoundFileNames.Contains(relativePath));
                     if (timingRule != null)
                     {
-                        ExecuteCopy(timingRule.Volume, timing, hitsoundCache, unhandledObjectList,
+                        ExecuteCopy(timingRule.Volume ?? timingRule.Category.DefaultVolume, timing,
+                            hitsoundCache, unhandledObjectList,
                             unhandledHitsoundCacheList, osuFile.Events.Samples, true);
                     }
                 }

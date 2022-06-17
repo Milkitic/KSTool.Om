@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:KSTool.Om.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="New Project"
+    Title="New Project Wizard"
     Width="650"
     Height="400"
     Background="{StaticResource RegionBrush}"
@@ -14,7 +14,7 @@
     TextBlock.Foreground="{StaticResource PrimaryTextBrush}"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-    <Grid Margin="15">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto" />

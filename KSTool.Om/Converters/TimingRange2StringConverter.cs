@@ -4,11 +4,17 @@ using System.Windows.Data;
 
 namespace KSTool.Om.Converters;
 
-internal class IsNullToIsEnabledConverter : IValueConverter
+internal class TimingRange2StringConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is not null;
+        if (value is Core.Models.RangeValue<int> rangeValue)
+        {
+            return TimeSpan.FromMilliseconds(rangeValue.Start).ToString(@"mm\:ss\.fff") +
+                   " ~ " + TimeSpan.FromMilliseconds(rangeValue.End).ToString(@"mm\:ss\.fff");
+        }
+
+        return value;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -2,6 +2,6 @@
 
 public class RangeInfo
 {
-    public int Volume { get; set; } = 100;
+    public int? Volume { get; set; }
     public RangeValue<int> TimingRange { get; set; }
 }
