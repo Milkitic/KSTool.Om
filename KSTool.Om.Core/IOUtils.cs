@@ -45,6 +45,8 @@ public static class IOUtils
 
     public static string GetRelativePath(string baseFolder, string filePath)
     {
+        if (!Path.IsPathRooted(filePath))
+            return filePath;
         var dirInfo = Path.GetFullPath(baseFolder + "/");
         var uri1 = new Uri(dirInfo);
         var uri2 = new Uri(filePath);

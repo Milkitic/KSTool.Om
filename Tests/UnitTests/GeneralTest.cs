@@ -66,7 +66,7 @@ public class GeneralTest
     public async Task TestConvertHelper()
     {
         await TemplateHelper.ConvertOsuFileToTemplate(
-            @"C:\Users\milkitic\Desktop\1002455 supercell - Giniro Hikousen  (Ttm bootleg Edit)",
-            "4K Hard", "Files/template.csv");
+            @"E:\Games\osu!\Songs\BmsToOsu\IIDX\29075\",
+            "lv.10", @"E:\Games\osu!\Songs\BmsToOsu\IIDX\29075\Project\template.csv");
     }
 }

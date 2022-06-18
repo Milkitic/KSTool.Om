@@ -240,15 +240,24 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Button
+                    <StackPanel
                         Grid.Row="2"
-                        Height="26"
-                        Padding="7,0"
                         HorizontalAlignment="Right"
-                        Click="btnExport_OnClick"
-                        Content="Export Keysound!"
-                        FontSize="12"
-                        Style="{StaticResource ButtonPrimary.Small}" />
+                        Orientation="Horizontal">
+                        <CheckBox
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Content="Ignore Samples"
+                            IsChecked="{Binding Project.EditorSettings.IgnoreSamplesChecked}" />
+                        <Button
+                            Height="26"
+                            Padding="7,0"
+                            HorizontalAlignment="Right"
+                            Click="btnExport_OnClick"
+                            Content="Export Keysound!"
+                            FontSize="12"
+                            Style="{StaticResource ButtonPrimary.Small}" />
+                    </StackPanel>
                 </Grid>
             </Grid>
 

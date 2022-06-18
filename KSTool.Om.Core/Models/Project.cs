@@ -16,6 +16,7 @@ public class Project : ViewModelBase
     private ObservableCollection<HitsoundCache> _unusedHitsoundFiles = new();
     private ProjectDifficulty? _currentDifficulty;
     private string? _templateCsvFile;
+    private string? _forceAudioFile;
     private const string CurrentProjectVersion = "2.0";
 
     #region Configurable
@@ -34,6 +35,13 @@ public class Project : ViewModelBase
             Templates.Clear();
             OnPropertyChanged();
         }
+    }
+
+    [YamlMember]
+    public string? ForceAudioFile
+    {
+        get => _forceAudioFile;
+        set => this.RaiseAndSetIfChanged(ref _forceAudioFile, value);
     }
 
     [YamlMember]
@@ -186,16 +194,25 @@ public class Project : ViewModelBase
                 !all.Contains(k.SoundFile.GetRelativePath(OsuBeatmapDir))));
     }
 
-    public async Task<string> ExportCurrentDifficultyAsync()
+    public async Task<string> ExportCurrentDifficultyAsync(bool ignoreSample = false)
     {
         if (CurrentDifficulty == null) throw new Exception("You haven't selected any difficulties!");
         if (string.IsNullOrWhiteSpace(TemplateCsvFile)) throw new Exception("You haven't selected any template files!");
         if (Templates.Count == 0) throw new Exception("The template file is not valid!");
+
         var osuFile = CurrentDifficulty.OsuFile;
         if (osuFile == null) throw new Exception("Osu file is lost");
 
+        var path = osuFile.OriginPath;
+        osuFile = CurrentDifficulty.OsuFile = await OsuFile.ReadFromFileAsync(path);
         return await Task.Run(() =>
         {
+            // Force audio file
+            if (!string.IsNullOrWhiteSpace(ForceAudioFile))
+            {
+                osuFile.General.AudioFilename = ForceAudioFile;
+            }
+
             // Clear current sounds
             osuFile.Events.Samples.Clear();
             foreach (var rawHitObject in osuFile.HitObjects.HitObjectList)
@@ -207,6 +224,7 @@ public class Project : ViewModelBase
                 rawHitObject.FileName = null;
             }
 
+            // Copy hitsounds
             var flattenRules = CurrentDifficulty.FlattenTimingRules
                 .Where(k => !k.IsCategoryLost)
                 .ToList();
@@ -251,7 +269,7 @@ public class Project : ViewModelBase
                     {
                         ExecuteCopy(timingRule.Volume ?? timingRule.Category.DefaultVolume, timing,
                             hitsoundCache, unhandledObjectList,
-                            unhandledHitsoundCacheList, osuFile.Events.Samples, true);
+                            unhandledHitsoundCacheList, osuFile.Events.Samples, true, ignoreSample);
                     }
                 }
 
@@ -268,7 +286,7 @@ public class Project : ViewModelBase
                     }
 
                     ExecuteCopy(volume ?? 0, timing, hitsoundCache, unhandledObjectList,
-                        unhandledHitsoundCacheList, osuFile.Events.Samples, false);
+                        unhandledHitsoundCacheList, osuFile.Events.Samples, false, ignoreSample);
                 }
             }
 
@@ -435,19 +453,26 @@ public class Project : ViewModelBase
     private RawHitObject[] GetCurrentTimingObjects(Dictionary<int, RawHitObject[]> allObjects, int timing,
         Dictionary<int, RawHitObject[]> ghostObjects)
     {
-        if (!allObjects.TryGetValue(timing, out var existObjects))
+        if (CurrentDifficulty?.OsuFile == null)
         {
-            existObjects = Array.Empty<RawHitObject>();
+            return Array.Empty<RawHitObject>();
         }
 
-        if (!ghostObjects.TryGetValue(timing, out var ghosts))
-        {
-            ghosts = Array.Empty<RawHitObject>();
-        }
+        var existObjects = CurrentDifficulty.OsuFile.HitObjects.HitObjectList
+            .Where(k => Math.Abs(k.Offset - timing) <= 8)
+            .ToArray();
+
+        if (CurrentDifficulty.GhostReferenceOsuFile == null) return existObjects;
+
+        var ghosts = CurrentDifficulty.GhostReferenceOsuFile.HitObjects.HitObjectList
+            .Where(k => Math.Abs(k.Offset - timing) <= 8)
+            .ToArray();
 
         if (ghosts.Length > 0)
         {
-            existObjects = existObjects.Where(k => !ghosts.Contains(k, HitObjectComparer.Instance)).ToArray();
+            existObjects = existObjects
+                .Where(k => !ghosts.Contains(k, HitObjectComparer.Instance))
+                .ToArray();
         }
 
         return existObjects;
@@ -455,7 +480,7 @@ public class Project : ViewModelBase
 
     private void ExecuteCopy(int volume, int timing, HitsoundCache hitsoundCache,
         List<RawHitObject> unhandledObjectList, List<HitsoundCache> unhandledHitsoundFileList,
-        List<StoryboardSampleData> samples, bool isCategoryScope)
+        List<StoryboardSampleData> samples, bool isCategoryScope, bool ignoreSample)
     {
         if (isCategoryScope)
         {
@@ -467,6 +492,7 @@ public class Project : ViewModelBase
 
         if (unhandledObjectList.Count == 0) // 没有物件用来复制了，但是存在待复制的列表，复制进SB音效中
         {
+            if (ignoreSample) return;
             samples.Add(new StoryboardSampleData
             {
                 Filename = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
@@ -496,11 +522,18 @@ public class Project : ViewModelBase
 public class EditorSettings : ViewModelBase
 {
     private bool _showUsedChecked;
+    private bool _ignoreSamplesChecked;
 
     public bool ShowUsedChecked
     {
         get => _showUsedChecked;
         set => this.RaiseAndSetIfChanged(ref _showUsedChecked, value);
+    }
+
+    public bool IgnoreSamplesChecked
+    {
+        get => _ignoreSamplesChecked;
+        set => this.RaiseAndSetIfChanged(ref _ignoreSamplesChecked, value);
     }
 
     public string? LastSelectedDifficulty { get; set; }

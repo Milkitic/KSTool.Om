@@ -327,8 +327,8 @@ public partial class MainWindow : Window
 
         try
         {
-
-            var path = await _viewModel.Project.ExportCurrentDifficultyAsync();
+            var ignoreSamples = _viewModel.Project.EditorSettings.IgnoreSamplesChecked;
+            var path = await _viewModel.Project.ExportCurrentDifficultyAsync(ignoreSamples);
             Growl.Success("Export keysound to " + path);
         }
         catch (Exception ex)
