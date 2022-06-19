@@ -460,7 +460,7 @@ public class Project : ViewModelBase
         }
 
         var existObjects = CurrentDifficulty.OsuFile.HitObjects.HitObjectList
-            .Where(k => Math.Abs(k.Offset - timing) <= 8)
+            .Where(k => Math.Abs(k.Offset - timing) <= 8 && k.FileName == null)
             .ToArray();
 
         if (CurrentDifficulty.GhostReferenceOsuFile == null) return existObjects;
