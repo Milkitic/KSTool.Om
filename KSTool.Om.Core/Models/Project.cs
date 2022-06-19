@@ -67,7 +67,7 @@ public class Project : ViewModelBase
     #endregion
 
     [YamlIgnore]
-    public Dictionary<int, HashSet<string>> Templates { get; set; } = new();
+    public Dictionary<int, HashSet<(string filename, int? volume)>> Templates { get; set; } = new();
 
     [YamlIgnore]
     public Dictionary<string, HitsoundCache> HitsoundFiles { get; } = new();
@@ -151,6 +151,7 @@ public class Project : ViewModelBase
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
             HasHeaderRecord = false,
+            MissingFieldFound = _ => { }
         };
         using var reader = new StreamReader(templateFile);
         using var csv = new CsvReader(reader, config);
@@ -159,11 +160,11 @@ public class Project : ViewModelBase
         {
             if (!Templates.TryGetValue(templateObject.Timing, out var hashSet))
             {
-                hashSet = new HashSet<string>();
+                hashSet = new HashSet<(string, int?)>();
                 Templates.Add(templateObject.Timing, hashSet);
             }
 
-            hashSet.Add(templateObject.RelativePath);
+            hashSet.Add((templateObject.RelativePath, templateObject.Volume));
             i++;
         }
 
@@ -241,16 +242,16 @@ public class Project : ViewModelBase
             foreach (var (timing, templateFiles) in Templates)
             {
                 // Get available sounds
-                var hitsoundCaches = templateFiles
-                    .Select(k =>
+                var hitsoundExportCaches = templateFiles
+                    .Select(kvp =>
                     {
-                        var success = HitsoundFiles.TryGetValue(k, out var cache);
-                        return (isSuccess: success, cache);
+                        var success = HitsoundFiles.TryGetValue(kvp.filename, out var cache);
+                        return (isSuccess: success, cache, kvp.volume);
                     })
                     .Where(k => k.isSuccess && !k.cache!.SoundFile.IsFileLost)
-                    .Select(k => k.cache!)
+                    .Select(k => new HitsoundExportCache(k.cache!, k.volume))
                     .ToArray();
-                var unhandledHitsoundCacheList = new List<HitsoundCache>(hitsoundCaches);
+                var unhandledHitsoundCacheList = new List<HitsoundExportCache>(hitsoundExportCaches);
 
                 // Get true object list to copy
                 var existObjects = GetCurrentTimingObjects(allObjects, timing, ghostObjects);
@@ -260,15 +261,15 @@ public class Project : ViewModelBase
                 var currentCategories = GetCurrentTimingRules(flattenRules, timing);
 
                 // Copy by current timing rule if exist (suggestion)
-                foreach (var hitsoundCache in hitsoundCaches)
+                foreach (var hitsoundExportCache in hitsoundExportCaches)
                 {
-                    var relativePath = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
+                    var relativePath = hitsoundExportCache.HitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
                     var timingRule =
                         currentCategories.FirstOrDefault(k => k.Category.SoundFileNames.Contains(relativePath));
                     if (timingRule != null)
                     {
-                        ExecuteCopy(timingRule.Volume ?? timingRule.Category.DefaultVolume, timing,
-                            hitsoundCache, unhandledObjectList,
+                        ExecuteCopy(hitsoundExportCache.Volume ?? timingRule.Volume ?? timingRule.Category.DefaultVolume, timing,
+                            hitsoundExportCache, unhandledObjectList,
                             unhandledHitsoundCacheList, osuFile.Events.Samples, true, ignoreSample);
                     }
                 }
@@ -276,9 +277,9 @@ public class Project : ViewModelBase
                 // Copy the the other things
                 foreach (var hitsoundCache in unhandledHitsoundCacheList.ToArray())
                 {
-                    var relativePath = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
-                    var volume = currentCategories.FirstOrDefault(k => k.Category.SoundFileNames.Contains(relativePath))
-                        ?.Volume;
+                    var relativePath = hitsoundCache.HitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
+                    var volume = hitsoundCache.Volume
+                                 ?? currentCategories.FirstOrDefault(k => k.Category.SoundFileNames.Contains(relativePath))?.Volume;
                     if (volume == null)
                     {
                         volume = SoundCategories.FirstOrDefault(k => k.SoundFileNames.Contains(relativePath))
@@ -478,8 +479,8 @@ public class Project : ViewModelBase
         return existObjects;
     }
 
-    private void ExecuteCopy(int volume, int timing, HitsoundCache hitsoundCache,
-        List<RawHitObject> unhandledObjectList, List<HitsoundCache> unhandledHitsoundFileList,
+    private void ExecuteCopy(int volume, int timing, HitsoundExportCache hitsoundCache,
+        List<RawHitObject> unhandledObjectList, List<HitsoundExportCache> unhandledHitsoundFileList,
         List<StoryboardSampleData> samples, bool isCategoryScope, bool ignoreSample)
     {
         if (isCategoryScope)
@@ -495,7 +496,7 @@ public class Project : ViewModelBase
             if (ignoreSample) return;
             samples.Add(new StoryboardSampleData
             {
-                Filename = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
+                Filename = hitsoundCache.HitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir),
                 Volume = (byte)(volume == 0 ? 100 : volume),
                 Offset = timing
             });
@@ -507,15 +508,27 @@ public class Project : ViewModelBase
         }
     }
 
-    private void GeneralCopy(int volume, HitsoundCache hitsoundCache, List<RawHitObject> unhandledObjectList,
-        List<HitsoundCache> unhandledHitsoundFileList)
+    private void GeneralCopy(int volume, HitsoundExportCache hitsoundCache, List<RawHitObject> unhandledObjectList,
+        List<HitsoundExportCache> unhandledHitsoundFileList)
     {
         var rawHitObject = unhandledObjectList[0];
         unhandledObjectList.RemoveAt(0);
 
-        rawHitObject.FileName = hitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
+        rawHitObject.FileName = hitsoundCache.HitsoundCache.SoundFile.GetRelativePath(OsuBeatmapDir);
         rawHitObject.SampleVolume = (byte)volume;
         unhandledHitsoundFileList.Remove(hitsoundCache);
+    }
+}
+
+public class HitsoundExportCache
+{
+    public HitsoundCache HitsoundCache { get; }
+    public int? Volume { get; }
+
+    public HitsoundExportCache(HitsoundCache hitsoundCache, int? volume)
+    {
+        HitsoundCache = hitsoundCache;
+        Volume = volume;
     }
 }
 

@@ -13,4 +13,7 @@ public class TemplateObject
 
     [Index(1)]
     public string RelativePath { get; set; }
+
+    [Index(2)]
+    public int? Volume { get; set; }
 }

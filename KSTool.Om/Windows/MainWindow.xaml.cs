@@ -311,13 +311,9 @@ public partial class MainWindow : Window
         if (_viewModel.Project == null) return;
         try
         {
-            if (_viewModel.Project.Templates.Count == 0)
-            {
-                if (_viewModel.Project.TemplateCsvFile == null)
-                    throw new Exception("You haven't selected any template files!");
-                var i = _viewModel.Project.LoadTemplateFile(_viewModel.Project.TemplateCsvFile);
-                Growl.Info($"Loaded {i} records in template file.");
-            }
+            if (_viewModel.Project.TemplateCsvFile == null)
+                throw new Exception("You haven't selected any template files!");
+            _viewModel.Project.LoadTemplateFile(_viewModel.Project.TemplateCsvFile);
         }
         catch (Exception ex)
         {
