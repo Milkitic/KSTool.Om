@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using HandyControl.Controls;
 using KSTool.Om.Core;
@@ -56,70 +55,10 @@ public partial class MainWindow : Window
         });
     }
 
-    private async void miCreateProject_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (!PreCloseProject()) return;
-
-        var window = new CreateProjectWindow
-        {
-            Owner = this
-        };
-        var result = window.ShowDialog();
-        if (result == true)
-        {
-            if (!CloseProject()) return;
-            LoadProject(await Project.CreateNewAsync(window.ProjectName!, window.BeatmapDirectory!));
-        }
-    }
-
-    private void miCloseProject_OnClick(object sender, RoutedEventArgs e)
-    {
-        CloseProject();
-    }
-
-    private void miSaveProject_OnClick(object sender, RoutedEventArgs e)
-    {
-        SaveProject();
-    }
-
-    private async void miOpenProject_OnClick(object sender, RoutedEventArgs e)
-    {
-        await OpenProjectAsync();
-    }
-
     private void LoadProject(Project project)
     {
         _viewModel.Project = project;
         RegisterHotKeys();
-    }
-
-    private void miOpenBeatmapFolder_OnClick(object sender, RoutedEventArgs e)
-    {
-        Process.Start(new ProcessStartInfo(_viewModel.Project!.OsuBeatmapDir)
-        {
-            UseShellExecute = true
-        });
-    }
-
-    private void miExit_OnClick(object sender, RoutedEventArgs e)
-    {
-        this.Close();
-    }
-
-    private void MainWindow_OnClosed(object? sender, EventArgs e)
-    {
-        Application.Current.Shutdown();
-        Environment.Exit(0);
-    }
-
-    private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
-    {
-        if (!PreCloseProject())
-        {
-            e.Cancel = true;
-        }
-
-        CloseProject();
     }
 
     private void SaveProject()
@@ -127,27 +66,26 @@ public partial class MainWindow : Window
         string? savePath = _viewModel.Project!.ProjectPath;
         if (savePath == null)
         {
-            var ofd = new CommonSaveFileDialog
-            {
-                DefaultFileName = _viewModel.Project.ProjectName,
-                DefaultExtension = "ksproj"
-            };
-            ofd.Filters.Add(new CommonFileDialogFilter("KS Project", "ksproj"));
-
-            if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                var folder = ofd.FileName;
-                savePath = folder;
-            }
-            else
-            {
-                return;
-            }
+            SaveAsProject();
+            return;
         }
 
         _viewModel.Project.Save(savePath);
-        _viewModel.Project.ProjectPath = savePath;
+        Growl.Success("Project Saved.");
+    }
 
+    private void SaveAsProject()
+    {
+        var ofd = new CommonSaveFileDialog
+        {
+            DefaultFileName = _viewModel.Project!.ProjectName,
+            DefaultExtension = "ksproj"
+        };
+        ofd.Filters.Add(new CommonFileDialogFilter("KS Project", "ksproj"));
+
+        if (ofd.ShowDialog() != CommonFileDialogResult.Ok) return;
+        _viewModel.Project.ProjectPath = ofd.FileName;
+        _viewModel.Project.Save(ofd.FileName);
         Growl.Success("Project Saved.");
     }
 
@@ -199,7 +137,7 @@ public partial class MainWindow : Window
 
             var ofd = new CommonOpenFileDialog
             {
-                DefaultExtension = "ksproj"
+                DefaultExtension = "ksproj",
             };
 
             ofd.Filters.Add(new CommonFileDialogFilter("KS Project", "ksproj"));
@@ -256,20 +194,76 @@ public partial class MainWindow : Window
     {
         var result = await Updater.CheckUpdateAsync();
 
-        if (result == true)
-        {
-            Growl.Ask($"Found new version: {Updater.NewRelease!.NewVerString}. " +
-                      $"Click yes to open the release page.",
-                dialogResult =>
+        if (result != true) return;
+        Growl.Ask($"Found new version: {Updater.NewRelease!.NewVerString}. " +
+                  $"Click yes to open the release page.",
+            dialogResult =>
+            {
+                if (dialogResult)
                 {
-                    if (dialogResult)
-                    {
-                        Updater.OpenLastReleasePage();
-                    }
+                    Updater.OpenLastReleasePage();
+                }
 
-                    return dialogResult;
-                });
+                return dialogResult;
+            });
+    }
+
+    private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
+    {
+        if (!PreCloseProject())
+        {
+            e.Cancel = true;
         }
+
+        CloseProject();
+    }
+
+    private void MainWindow_OnClosed(object? sender, EventArgs e)
+    {
+        Application.Current.Shutdown();
+        Environment.Exit(0);
+    }
+
+    private async void miCreateProject_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (!PreCloseProject()) return;
+
+        var window = new CreateProjectWindow
+        {
+            Owner = this
+        };
+        var result = window.ShowDialog();
+        if (result != true) return;
+        if (!CloseProject()) return;
+        LoadProject(await Project.CreateNewAsync(window.ProjectName!, window.BeatmapDirectory!));
+    }
+
+    private void miCloseProject_OnClick(object sender, RoutedEventArgs e)
+    {
+        CloseProject();
+    }
+
+    private void miSaveProject_OnClick(object sender, RoutedEventArgs e)
+    {
+        SaveProject();
+    }
+
+    private async void miOpenProject_OnClick(object sender, RoutedEventArgs e)
+    {
+        await OpenProjectAsync();
+    }
+
+    private void miOpenBeatmapFolder_OnClick(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo(_viewModel.Project!.OsuBeatmapDir)
+        {
+            UseShellExecute = true
+        });
+    }
+
+    private void miExit_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.Close();
     }
 
     private void miOpenWebPage_OnClick(object sender, RoutedEventArgs e)
