@@ -11,7 +11,6 @@ using KSTool.Om.Core;
 using KSTool.Om.Core.Models;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Milki.Extensions.MouseKeyHook;
-using ModifierKeys = Milki.Extensions.MouseKeyHook.ModifierKeys;
 using Window = System.Windows.Window;
 
 namespace KSTool.Om.Windows;
@@ -40,19 +39,16 @@ public class MainWindowViewModel : ViewModelBase
 public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel _viewModel;
-    private readonly List<Guid> _hotKeyHandles = new();
+    private readonly List<Guid> _hotKeyGuids = new();
     private bool _opening;
 
     public MainWindow()
     {
         InitializeComponent();
         DataContext = _viewModel = new MainWindowViewModel();
-        App.Current.KeyboardHook.RegisterHotkey(ModifierKeys.Control, HookKeys.O, async (_, _, type) =>
+        App.Current.KeyboardHook.RegisterHotkey(HookModifierKeys.Control, HookKeys.O, async (_, _, _) =>
         {
-            if (type == KeyAction.KeyDown)
-            {
-                await Dispatcher.InvokeAsync(async () => await OpenProjectAsync());
-            }
+            await Dispatcher.InvokeAsync(async () => await OpenProjectAsync());
         });
     }
 
@@ -92,36 +88,28 @@ public partial class MainWindow : Window
 
     private void RegisterHotKeys()
     {
-        _hotKeyHandles.Add(App.Current.KeyboardHook.RegisterHotkey(
-            ModifierKeys.Control, HookKeys.S, (_, _, type) =>
+        _hotKeyGuids.Add(App.Current.KeyboardHook.RegisterHotkey(HookModifierKeys.Control, HookKeys.S, (_, _, _) =>
+        {
+            Dispatcher.Invoke(() =>
             {
-                if (type == KeyAction.KeyDown)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        this.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
-                        SaveProject();
-                    });
-                }
-            }));
-        _hotKeyHandles.Add(App.Current.KeyboardHook.RegisterHotkey(
-            ModifierKeys.Control, HookKeys.Left, (_, _, type) =>
-            {
-                if (type == KeyAction.KeyDown)
-                {
-                    Dispatcher.Invoke(() => categoryManager.AddSoundToCategory());
-                }
-            }));
+                MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
+                SaveProject();
+            });
+        }));
+        _hotKeyGuids.Add(App.Current.KeyboardHook.RegisterHotkey(HookModifierKeys.Control, HookKeys.Left, (_, _, _) =>
+        {
+            Dispatcher.Invoke(() => categoryManager.AddSoundToCategory());
+        }));
     }
 
     private void UnregisterHotKeys()
     {
-        foreach (var hotKeyHandle in _hotKeyHandles)
+        foreach (var hotKeyHandle in _hotKeyGuids)
         {
             App.Current.KeyboardHook.TryUnregister(hotKeyHandle);
         }
 
-        _hotKeyHandles.Clear();
+        _hotKeyGuids.Clear();
     }
 
     private async Task OpenProjectAsync()
