@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -63,18 +64,17 @@ public partial class MainWindow : Window
 
     private void SaveProject()
     {
-        string? savePath = _viewModel.Project!.ProjectPath;
-        if (savePath == null)
+        if (_viewModel.Project!.ProjectPath == null)
         {
             SaveAsProject();
             return;
         }
 
-        _viewModel.Project.Save(savePath);
+        _viewModel.Project.Save(_viewModel.Project!.ProjectPath);
         Growl.Success("Project Saved.");
     }
 
-    private void SaveAsProject()
+    private bool SaveAsProject()
     {
         var ofd = new CommonSaveFileDialog
         {
@@ -83,10 +83,11 @@ public partial class MainWindow : Window
         };
         ofd.Filters.Add(new CommonFileDialogFilter("KS Project", "ksproj"));
 
-        if (ofd.ShowDialog() != CommonFileDialogResult.Ok) return;
+        if (ofd.ShowDialog() != CommonFileDialogResult.Ok) return false;
         _viewModel.Project.ProjectPath = ofd.FileName;
         _viewModel.Project.Save(ofd.FileName);
         Growl.Success("Project Saved.");
+        return true;
     }
 
     private void RegisterHotKeys()
@@ -261,9 +262,31 @@ public partial class MainWindow : Window
         });
     }
 
+    private void miOpenProjectFolder_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.Project == null) return;
+        if (_viewModel.Project.ProjectPath == null)
+        {
+            if (!SaveAsProject())
+            {
+                return;
+            }
+        }
+
+        var projectPath = _viewModel.Project.ProjectPath!;
+        var folder = Path.IsPathRooted(projectPath)
+            ? Path.GetDirectoryName(projectPath)
+            : Path.GetDirectoryName(Path.Combine(Environment.CurrentDirectory, projectPath));
+
+        Process.Start(new ProcessStartInfo(folder!)
+        {
+            UseShellExecute = true
+        });
+    }
+
     private void miExit_OnClick(object sender, RoutedEventArgs e)
     {
-        this.Close();
+        Close();
     }
 
     private void miOpenWebPage_OnClick(object sender, RoutedEventArgs e)

@@ -46,6 +46,10 @@
                         Click="miOpenBeatmapFolder_OnClick"
                         Header="Open _Beatmap Folder"
                         IsEnabled="{Binding Project, Converter={StaticResource IsNullToIsEnabledConverter}}" />
+                    <MenuItem
+                        Click="miOpenProjectFolder_OnClick"
+                        Header="Open _Project Folder"
+                        IsEnabled="{Binding Project, Converter={StaticResource IsNullToIsEnabledConverter}}" />
                     <Separator />
                     <MenuItem Click="miExit_OnClick" Header="_Exit" />
                 </MenuItem>
