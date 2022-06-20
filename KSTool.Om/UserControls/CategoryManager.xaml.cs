@@ -94,7 +94,7 @@ public partial class CategoryManager : UserControl
         /*SelectedHitsound: { } cache,*/
         if (Project is not { SelectedCategory: { } category }) return;
         var mainWindow = (MainWindow)App.Current.MainWindow!;
-        foreach (var selectedItem in mainWindow.lbHitsounds.SelectedItems)
+        foreach (var selectedItem in mainWindow.soundLibraryManager.lbHitsounds.SelectedItems)
         {
             if (selectedItem is HitsoundCache hitsoundCache)
             {
@@ -139,24 +139,24 @@ public partial class CategoryManager : UserControl
     {
         if (Project.EditorSettings.ShowUsedChecked) return;
         var mainWindow = (MainWindow)App.Current.MainWindow!;
-        var index = mainWindow.lbHitsounds.SelectedIndex;
+        var index = mainWindow.soundLibraryManager.lbHitsounds.SelectedIndex;
 
         Project.ComputeUnusedHitsounds();
         Project.RefreshShowHitsoundType();
 
         if (index == 0)
         {
-            var item = mainWindow.lbHitsounds.Items.Cast<object>().FirstOrDefault();
-            if (item != null) mainWindow.lbHitsounds.ScrollIntoView(item);
+            var item = mainWindow.soundLibraryManager.lbHitsounds.Items.Cast<object>().FirstOrDefault();
+            if (item != null) mainWindow.soundLibraryManager.lbHitsounds.ScrollIntoView(item);
         }
         else if (index >= Project.UnusedHitsoundFiles.Count)
         {
-            var item = mainWindow.lbHitsounds.Items.Cast<object>().LastOrDefault();
-            if (item != null) mainWindow.lbHitsounds.ScrollIntoView(item);
+            var item = mainWindow.soundLibraryManager.lbHitsounds.Items.Cast<object>().LastOrDefault();
+            if (item != null) mainWindow.soundLibraryManager.lbHitsounds.ScrollIntoView(item);
         }
         else
         {
-            mainWindow.lbHitsounds.ScrollIntoView(Project.UnusedHitsoundFiles[index]);
+            mainWindow.soundLibraryManager.lbHitsounds.ScrollIntoView(Project.UnusedHitsoundFiles[index]);
         }
     }
 }

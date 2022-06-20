@@ -54,7 +54,6 @@ public partial class MainWindow : Window
                 await Dispatcher.InvokeAsync(async () => await OpenProjectAsync());
             }
         });
-        AudioHelper.RegisterAudioPlaying(lbHitsounds);
     }
 
     private async void miCreateProject_OnClick(object sender, RoutedEventArgs e)
@@ -121,18 +120,6 @@ public partial class MainWindow : Window
         }
 
         CloseProject();
-    }
-
-    private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_viewModel.Project != null)
-        {
-            var currentDifficulty = _viewModel.Project!.CurrentDifficulty;
-            if (currentDifficulty is { IsDifficultyLost: false, OsuFile: { } })
-            {
-                timelineViewer.Load(currentDifficulty.OsuFile);
-            }
-        }
     }
 
     private void SaveProject()
@@ -263,92 +250,6 @@ public partial class MainWindow : Window
         }
 
         return true;
-    }
-
-    private void cbShowUsed_OnCheckChanged(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.Project != null)
-        {
-            _viewModel.Project.ComputeUnusedHitsounds();
-            _viewModel.Project.RefreshShowHitsoundType();
-        }
-    }
-
-    private void btnAddRule_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.Project?.CurrentDifficulty == null) return;
-        var addWin = new AddOrEditRuleWindow(_viewModel.Project, _viewModel.Project.CurrentDifficulty)
-        {
-            Owner = this
-        };
-        addWin.ShowDialog();
-    }
-
-    private void btnDelRule_OnClick(object sender, RoutedEventArgs e)
-    {
-        var button = (Button)sender;
-        var timingRule = (TimingRule)button.Tag;
-        if (_viewModel.Project?.CurrentDifficulty == null) return;
-
-        _viewModel.Project.CurrentDifficulty.FlattenTimingRules.Remove(timingRule);
-    }
-
-    private void btnEditRule_OnClick(object sender, RoutedEventArgs e)
-    {
-        var button = (Button)sender;
-        var timingRule = (TimingRule)button.Tag;
-        if (_viewModel.Project?.CurrentDifficulty == null) return;
-
-        var addWin = new AddOrEditRuleWindow(_viewModel.Project, _viewModel.Project.CurrentDifficulty, timingRule)
-        {
-            Owner = this
-        };
-        addWin.ShowDialog();
-    }
-
-    private async void btnExport_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.Project == null) return;
-        try
-        {
-            if (_viewModel.Project.TemplateCsvFile == null)
-                throw new Exception("You haven't selected any template files!");
-            _viewModel.Project.LoadTemplateFile(_viewModel.Project.TemplateCsvFile);
-        }
-        catch (Exception ex)
-        {
-            Growl.Error("Load template error: " + ex.Message);
-            return;
-        }
-
-        try
-        {
-            var ignoreSamples = _viewModel.Project.EditorSettings.IgnoreSamplesChecked;
-            var path = await _viewModel.Project.ExportCurrentDifficultyAsync(ignoreSamples);
-            Growl.Success("Export keysound to " + path);
-        }
-        catch (Exception ex)
-        {
-            Growl.Error("Export error: " + ex.Message);
-        }
-    }
-
-    private void btnBrowseTemplate_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.Project == null) return;
-        var ofd = new CommonOpenFileDialog
-        {
-            DefaultExtension = "csv",
-            Multiselect = false
-        };
-
-        ofd.Filters.Add(new CommonFileDialogFilter("CSV file", "csv"));
-
-        if (ofd.ShowDialog() == CommonFileDialogResult.Ok)
-        {
-            var file = ofd.FileName;
-            _viewModel.Project.TemplateCsvFile = file;
-        }
     }
 
     private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)

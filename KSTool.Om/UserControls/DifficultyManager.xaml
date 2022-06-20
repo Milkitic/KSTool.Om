@@ -1,0 +1,169 @@
+﻿<UserControl
+    x:Class="KSTool.Om.UserControls.DifficultyManager"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:KSTool.Om.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:KSTool.Om.Core.Models;assembly=KSTool.Om.Core"
+    d:DataContext="{d:DesignInstance models:Project,
+                                     IsDesignTimeCreatable=False}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <StackPanel
+                Margin="15,5,5,5"
+                HorizontalAlignment="Left"
+                Orientation="Vertical">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    FontSize="14"
+                    Text="Selected Difficulty" />
+                <ComboBox
+                    Width="160"
+                    Height="26"
+                    MinHeight="0"
+                    Margin="0,0,0,5"
+                    Padding="8,0"
+                    FontSize="12"
+                    ItemsSource="{Binding Difficulties}"
+                    SelectedItem="{Binding CurrentDifficulty}"
+                    SelectionChanged="Selector_OnSelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="models:ProjectDifficulty">
+                            <TextBlock Text="{Binding DifficultyName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel
+                Margin="15,5,5,5"
+                HorizontalAlignment="Left"
+                Orientation="Vertical">
+                <TextBlock
+                    Margin="0,0,0,5"
+                    FontSize="14"
+                    Text="Template File" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox
+                        Width="333"
+                        Height="26"
+                        MinHeight="0"
+                        Margin="0,0,0,5"
+                        Padding="8,0"
+                        FontSize="12"
+                        IsReadOnly="True"
+                        Text="{Binding TemplateCsvFile, Mode=OneWay}" />
+                    <Button
+                        Width="26"
+                        Height="26"
+                        Margin="1,-3,0,3"
+                        Click="btnBrowseTemplate_OnClick"
+                        Content="..."
+                        FontFamily="Arial"
+                        Style="{StaticResource ToolButton}" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+        <Grid Grid.Row="1" Margin="15,0,20,15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <DockPanel>
+                <TextBlock
+                    Margin="0,0,0,5"
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Left"
+                    FontSize="14"
+                    Text="Rule Definition" />
+                <StackPanel
+                    Margin="0,-2,0,2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    DockPanel.Dock="Right"
+                    Orientation="Horizontal"
+                    TextOptions.TextFormattingMode="Display"
+                    TextOptions.TextRenderingMode="Grayscale">
+                    <Button
+                        HorizontalAlignment="Center"
+                        Click="btnAddRule_OnClick"
+                        Content="&#xE710;"
+                        FontSize="13"
+                        Style="{StaticResource ToolButton}" />
+                </StackPanel>
+            </DockPanel>
+            <DataGrid
+                Grid.Row="1"
+                Grid.Column="0"
+                Margin="0,0,0,10"
+                AutoGenerateColumns="False"
+                Background="{StaticResource RegionBrush}"
+                CanUserAddRows="False"
+                FontSize="12"
+                IsReadOnly="True"
+                ItemsSource="{Binding CurrentDifficulty.FlattenTimingRules}"
+                Style="{StaticResource DataGrid.Small}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="125"
+                        Binding="{Binding Category.Name}"
+                        Header="Category Name" />
+                    <DataGridTextColumn Binding="{Binding TimingRange, Converter={StaticResource TimingRange2StringConverter}}" Header="Time Range" />
+                    <DataGridTextColumn Binding="{Binding Volume, Converter={StaticResource Volume2StringConverter}}" Header="Volume" />
+                    <DataGridTemplateColumn Header="Operation">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                    <Button
+                                        Margin="0,0,5,0"
+                                        Click="btnEditRule_OnClick"
+                                        Content="&#xE70F;"
+                                        Style="{StaticResource ToolButtonPrimary}"
+                                        Tag="{Binding}" />
+                                    <Button
+                                        x:Name="btnDelCategorySound"
+                                        Click="btnDelRule_OnClick"
+                                        Content="&#xE74D;"
+                                        FontSize="13"
+                                        Style="{StaticResource ToolButtonDanger}"
+                                        Tag="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel
+                Grid.Row="2"
+                Grid.Column="0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <CheckBox
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center"
+                    Content="Ignore Samples"
+                    IsChecked="{Binding EditorSettings.IgnoreSamplesChecked}" />
+                <Button
+                    Height="26"
+                    Padding="7,0"
+                    HorizontalAlignment="Right"
+                    Click="btnExport_OnClick"
+                    Content="Export Keysound!"
+                    FontSize="12"
+                    Style="{StaticResource ButtonPrimary.Small}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
