@@ -274,11 +274,11 @@ public partial class MainWindow : Window
         }
 
         var projectPath = _viewModel.Project.ProjectPath!;
-        var folder = Path.IsPathRooted(projectPath)
-            ? Path.GetDirectoryName(projectPath)
-            : Path.GetDirectoryName(Path.Combine(Environment.CurrentDirectory, projectPath));
+        projectPath = Path.IsPathRooted(projectPath)
+            ? projectPath
+            : Path.Combine(Environment.CurrentDirectory, projectPath);
 
-        Process.Start(new ProcessStartInfo(folder!)
+        Process.Start(new ProcessStartInfo("explorer.exe", string.Format("/select,\"{0}\"", projectPath))
         {
             UseShellExecute = true
         });
