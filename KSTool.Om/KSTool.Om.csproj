@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.3.0" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
-    <PackageReference Include="Milki.Extensions.MouseKeyHook" Version="0.0.5" />
+    <PackageReference Include="Milki.Extensions.MouseKeyHook" Version="0.0.8" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using Coosu.Beatmap;
+using Coosu.Beatmap.Extensions;
 using Coosu.Beatmap.Sections.Event;
 using Coosu.Beatmap.Sections.HitObject;
 using CsvHelper;
@@ -204,7 +205,7 @@ public class Project : ViewModelBase
         var osuFile = CurrentDifficulty.OsuFile;
         if (osuFile == null) throw new Exception("Osu file is lost");
 
-        var path = osuFile.OriginPath;
+        var path = osuFile.OriginalPath;
         osuFile = CurrentDifficulty.OsuFile = await OsuFile.ReadFromFileAsync(path);
         return await Task.Run(() =>
         {
@@ -291,18 +292,10 @@ public class Project : ViewModelBase
                 }
             }
 
-            var metadataVersion = osuFile.Metadata.Version;
-            osuFile.Metadata.Version += " (KS)";
-            try
-            {
-                var combine = Path.Combine(OsuBeatmapDir, osuFile.GetPath(osuFile.Metadata.Version));
-                osuFile.WriteOsuFile(combine);
-                return combine;
-            }
-            finally
-            {
-                osuFile.Metadata.Version = metadataVersion;
-            }
+            var version = osuFile.Metadata.Version + " (KS)";
+            var osuPath = Path.Combine(OsuBeatmapDir, osuFile.GetOsuFilename(version));
+            osuFile.SaveToDirectory(OsuBeatmapDir, version);
+            return osuPath;
         });
     }
 
