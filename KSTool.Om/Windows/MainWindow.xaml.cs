@@ -184,17 +184,16 @@ public partial class MainWindow : Window
         var result = await Updater.CheckUpdateAsync();
 
         if (result != true) return;
-        Growl.Ask($"Found new version: {Updater.NewRelease!.NewVerString}. " +
-                  $"Click yes to open the release page.",
-            dialogResult =>
+        var verString = Updater.NewRelease!.NewVerString;
+        Growl.Ask($"Found new version: {verString}. Click yes to open the release page.", dialogResult =>
+        {
+            if (dialogResult)
             {
-                if (dialogResult)
-                {
-                    Updater.OpenLastReleasePage();
-                }
+                Updater.OpenLastReleasePage();
+            }
 
-                return dialogResult;
-            });
+            return dialogResult;
+        });
     }
 
     private void MainWindow_OnClosing(object? sender, CancelEventArgs e)
